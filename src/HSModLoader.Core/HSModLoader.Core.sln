@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31229.75
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.Core", "HSModLoader.Core\HSModLoader.Core.csproj", "{B3FB37F9-FBA7-4BED-8A71-F6A55F4CBBFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.App", "..\HSModLoader.App\HSModLoader.App.csproj", "{60CAABFB-8D44-4C7B-8358-5994C301FCF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3FB37F9-FBA7-4BED-8A71-F6A55F4CBBFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3FB37F9-FBA7-4BED-8A71-F6A55F4CBBFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3FB37F9-FBA7-4BED-8A71-F6A55F4CBBFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3FB37F9-FBA7-4BED-8A71-F6A55F4CBBFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60CAABFB-8D44-4C7B-8358-5994C301FCF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60CAABFB-8D44-4C7B-8358-5994C301FCF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60CAABFB-8D44-4C7B-8358-5994C301FCF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60CAABFB-8D44-4C7B-8358-5994C301FCF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {36AB6134-9574-41E6-B7E0-10C5C78357A1}
+	EndGlobalSection
+EndGlobal
