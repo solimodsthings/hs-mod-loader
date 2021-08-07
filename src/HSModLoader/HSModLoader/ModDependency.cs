@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HSModLoader.Core
+namespace HSModLoader
 {
     public class ModDependency
     {

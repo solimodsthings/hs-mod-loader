@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace HSModLoader.Core
+namespace HSModLoader
 {
     public class Mod
     {
