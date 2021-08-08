@@ -11,6 +11,7 @@
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
         Title="Himeko Sutori Mod Manager" 
         ContentRendered="OnWindowContentRendered"
+        Closing="OnWindowClosing"
         Height="650" 
         Width="900"
         WindowStartupLocation="CenterScreen">

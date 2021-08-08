@@ -58,6 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="LogFileExtensions.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">
       <DependentUpon>GameFolderWindow.xaml</DependentUpon>
@@ -116,6 +117,9 @@
   <ItemGroup>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.4</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

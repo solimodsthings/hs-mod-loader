@@ -32,6 +32,7 @@ namespace HSModLoader.App
             catch (Exception ex)
             {
                 // If the path is not a file or something that cannot be accessed, an exception is thrown
+                ex.AppendToLogFile();
             }
 
             return false;
@@ -63,6 +64,7 @@ namespace HSModLoader.App
             catch (Exception e)
             {
                 // If the path is not a file or something that cannot be accessed, an exception is thrown
+                e.AppendToLogFile();
             }
 
             return null;

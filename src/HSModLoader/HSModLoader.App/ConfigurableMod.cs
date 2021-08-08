@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +21,7 @@ namespace HSModLoader.App
 
         public int Order { get; set; }
 
+        [JsonIgnore]
         public string TruncatedName { 
             get
             {
@@ -33,6 +36,7 @@ namespace HSModLoader.App
             } 
         }
 
+        [JsonIgnore]
         public string OptionalUrl
         {
             get
@@ -51,6 +55,23 @@ namespace HSModLoader.App
         public ConfigurableMod()
         {
             State = ModState.Disabled;
+        }
+
+        public ConfigurableMod(Mod mod) : base()
+        {
+
+            var modProperties = typeof(Mod).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            foreach (var property in modProperties)
+            {
+                var cmodProperty = typeof(ConfigurableMod).GetProperty(property.Name);
+
+                if(cmodProperty != null)
+                {
+                    cmodProperty.SetValue(this, property.GetValue(mod, null), null);
+                }
+            }
+
         }
 
     }

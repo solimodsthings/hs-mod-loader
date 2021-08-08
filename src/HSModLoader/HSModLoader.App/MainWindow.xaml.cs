@@ -27,23 +27,34 @@ namespace HSModLoader.App
         {
             InitializeComponent();
             this.Manager = new ModManager();
+            this.Manager.LoadFromFile();
         
             this.ListAvailableMods.ItemsSource = this.Manager.Mods;
 
             // Special case for Superwolf mod which is part of base game install
-            // Moves this to mods.json later
-            this.Manager.RegisterMod(new ConfigurableMod()
+            // Move this to mods.json later
+
+            if (this.Manager.Mods.Count == 0)
             {
-                Name = "SuperWolf",
-                Version = "1.0",
-                Author = "Nathaniel3W",
-                HasMutator = true,
-                MutatorStartClass = "rpgtacgame.RPGTacMutator_SuperWolf"
-            });
+                this.Manager.RegisterMod(new Mod()
+                {
+                    Name = "SuperWolf",
+                    Version = "1.0",
+                    Author = "Nathaniel3W",
+                    HasMutator = true,
+                    MutatorStartClass = "rpgtacgame.RPGTacMutator_SuperWolf"
+                });
+            }
 
             this.ListAvailableMods.SelectedIndex = 0;
             this.UpdateModInfoBox();
 
+        }
+
+        private void Save()
+        {
+            // TODO saving screen
+            this.Manager.SaveToFile();
         }
 
         private void UpdateModInfoBox()
@@ -76,6 +87,10 @@ namespace HSModLoader.App
             {
                 this.Close();
             }
+            else
+            {
+                this.Save();
+            }
 
         }
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
@@ -94,6 +109,11 @@ namespace HSModLoader.App
             {
                 this.ShowGameFolderDialog();
             }
+        }
+
+        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.Save();
         }
     }
 }

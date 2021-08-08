@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 namespace HSModLoader.App
 {
     /// <summary>
-    /// Interaction logic for SetGameFolderWindow.xaml
+    /// Interaction logic for GameFolderWindow.xaml
     /// </summary>
     public partial class GameFolderWindow : Window
     {
