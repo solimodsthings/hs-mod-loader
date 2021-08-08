@@ -37,8 +37,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Canvas x:Name="CanvasFadeOut" Panel.ZIndex="100" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Black" Opacity="0.5" Visibility="Hidden"></Canvas>
-
         <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" x:Name="AppTitleBar" Background="{DynamicResource SystemControlBackgroundAccentBrush}" Height="32" ui:ThemeManager.RequestedTheme="Light" >
 
             <Grid.ColumnDefinitions>
@@ -104,7 +102,6 @@
             </StackPanel>
         </Grid>
 
-
         <Grid Grid.Row="1" Grid.Column="1" Background="#DDD">
             <GroupBox Margin="16">
                 <Grid>
@@ -113,34 +110,59 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0">
+                    <StackPanel x:Name="ModInfoPanel" Grid.Row="0">
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Name</Label>
-                        <Label x:Name="LabelModName" Style="{StaticResource InfoLabelValueStyle}"></Label>
+                        <Label x:Name="LabelModName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Name}"/>
+                        
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Version</Label>
-                        <Label x:Name="LabelModVersion" Style="{StaticResource InfoLabelValueStyle}"></Label>
-                        <Label Style="{StaticResource InfoLabelHeaderStyle}">Source</Label>
-                        <Label x:Name="LabelModSourceUrl" Style="{StaticResource InfoLabelValueStyle}"></Label>
+                        <Label x:Name="LabelModVersion" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Version}"/>
+                        
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Author</Label>
-                        <Label x:Name="LabelAuthorName" Style="{StaticResource InfoLabelValueStyle}"></Label>
+                        <Label x:Name="LabelAuthorName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Author}"/>
+                        
+                        <Label Style="{StaticResource InfoLabelHeaderStyle}">State</Label>
+                        <Label x:Name="LabelModState" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding State}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
                         <Separator/>
                         <GroupBox>
-                            <StackPanel>
-                                <RadioButton x:Name="RadioButtonIsEnabled" ToolTip="Enables the mod">Enabled</RadioButton>
-                                <RadioButton x:Name="RadioButtonIsSoftDisabled" ToolTip="Only disables scripts of this mod. Content packages will still be available">Soft Disabled</RadioButton>
-                                <RadioButton x:Name="RadioButtonIsDisabled" ToolTip="Fully disables all scripts and content packages of this mod">Disabled</RadioButton>
+                            <StackPanel x:Name="ModStatePanel">
+                                
+                                <RadioButton x:Name="RadioButtonIsEnabled" 
+                                             IsChecked="{Binding IsEnabled}"  
+                                             Checked="OnControllerUsed" 
+                                             Content="Enabled"
+                                             ToolTip="Enables the mod" 
+                                             GroupName="ModState" />
+                                
+                                <RadioButton x:Name="RadioButtonIsSoftDisabled" 
+                                             IsChecked="{Binding IsSoftDisabled}"  
+                                             Checked="OnControllerUsed" 
+                                             Content="Soft Disabled"
+                                             ToolTip="Only disables scripts of this mod. Content packages will still be available"
+                                             GroupName="ModState" />
+                                
+                                <RadioButton x:Name="RadioButtonIsDisabled" 
+                                             IsChecked="{Binding IsDisabled}"  
+                                             Checked="OnControllerUsed" 
+                                             Content="Disabled"
+                                             ToolTip="Fully disables all scripts and content packages of this mod"
+                                             GroupName="ModState" />
                             </StackPanel>
                         </GroupBox>
+                        
                         <Button Margin="0,4,0,4">Move Up</Button>
                         <Button Margin="0,4,0,4">Move Down</Button>
                         <Button Margin="0,4,0,4">Remove</Button>
+                        
                     </StackPanel>
                 </Grid>
             </GroupBox>
 
         </Grid>
+
+        <Canvas x:Name="CanvasFadeOut" Panel.ZIndex="100" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Black" Opacity="0.5" Visibility="Hidden"/>
 
     </Grid>
 </Window>

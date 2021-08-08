@@ -21,37 +21,6 @@ namespace HSModLoader.App
 
         public int Order { get; set; }
 
-        [JsonIgnore]
-        public string TruncatedName { 
-            get
-            {
-                if(this.Name.Length <= 32)
-                {
-                    return this.Name;
-                }
-                else
-                {
-                    return this.Name.Substring(0, 29) + "...";
-                }    
-            } 
-        }
-
-        [JsonIgnore]
-        public string OptionalUrl
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(this.Url) && !string.IsNullOrWhiteSpace(this.Url))
-                {
-                    return this.Url;
-                }
-                else
-                {
-                    return "N/A";
-                }
-            }
-        }
-
         public ConfigurableMod()
         {
             State = ModState.Disabled;

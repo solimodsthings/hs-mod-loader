@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,17 +22,22 @@ namespace HSModLoader.App
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ModManager Manager;
+        public ModManager Manager { get; set; }
+
+        public ObservableCollection<ModView> ModViews { get; set; }
+        public ModView SelectedMod { get; set; }
         
         public MainWindow()
         {
             InitializeComponent();
             this.Manager = new ModManager();
             this.Manager.LoadFromFile();
-        
-            this.ListAvailableMods.ItemsSource = this.Manager.Mods;
 
-            // Special case for Superwolf mod which is part of base game install
+            this.ModViews = new ObservableCollection<ModView>();
+            this.ListAvailableMods.ItemsSource = this.ModViews;
+            
+
+            // Special case for SuperWolf mod which is part of base game install
             // Move this to mods.json later
 
             if (this.Manager.Mods.Count == 0)
@@ -44,10 +50,19 @@ namespace HSModLoader.App
                     HasMutator = true,
                     MutatorStartClass = "rpgtacgame.RPGTacMutator_SuperWolf"
                 });
+
             }
 
+            foreach (var mod in this.Manager.Mods)
+            {
+                this.ModViews.Add(new ModView(mod));
+            }
+
+            this.SelectedMod = new ModView(this.Manager.Mods[0]);
+            this.ModInfoPanel.DataContext = this.SelectedMod;
+            this.ModStatePanel.DataContext = this.SelectedMod;
+
             this.ListAvailableMods.SelectedIndex = 0;
-            this.UpdateModInfoBox();
 
         }
 
@@ -57,25 +72,6 @@ namespace HSModLoader.App
             this.Manager.SaveToFile();
         }
 
-        private void UpdateModInfoBox()
-        {
-            int selection = this.ListAvailableMods.SelectedIndex;
-
-            if(selection >= 0)
-            {
-                var mod = this.Manager.Mods[selection];
-                this.LabelModName.Content = mod.Name;
-                this.LabelModVersion.Content = mod.Version;
-                this.LabelAuthorName.Content = mod.Author;
-                this.LabelModSourceUrl.Content = mod.OptionalUrl;
-
-                // TODO: use binding instead
-                this.RadioButtonIsDisabled.IsChecked = (mod.State == ModState.Disabled);
-                this.RadioButtonIsEnabled.IsChecked = (mod.State == ModState.Enabled);
-                this.RadioButtonIsSoftDisabled.IsChecked = (mod.State == ModState.SoftDisabled);
-
-            }
-        }
         private void ShowGameFolderDialog()
         {
             this.CanvasFadeOut.Visibility = Visibility.Visible;
@@ -93,9 +89,16 @@ namespace HSModLoader.App
             }
 
         }
+
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.UpdateModInfoBox();
+            int selection = this.ListAvailableMods.SelectedIndex;
+
+            if (selection >= 0)
+            {
+                var mod = this.Manager.Mods[selection];
+                this.SelectedMod.Set(mod);
+            }
         }
 
         private void OnButtonSetGameFolderClick(object sender, RoutedEventArgs e)
@@ -114,6 +117,11 @@ namespace HSModLoader.App
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.Save();
+        }
+
+        private void OnControllerUsed(object sender, RoutedEventArgs e)
+        {
+            this.ListAvailableMods.Items.Refresh();
         }
     }
 }
