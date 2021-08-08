@@ -13,7 +13,7 @@ namespace HSModLoader.App
         Enabled
     }
 
-    public class ManagedMod : Mod
+    public class ConfigurableMod : Mod
     {
         public ModState State { get; set; }
 
@@ -48,7 +48,7 @@ namespace HSModLoader.App
             }
         }
 
-        public ManagedMod()
+        public ConfigurableMod()
         {
             State = ModState.Disabled;
         }
