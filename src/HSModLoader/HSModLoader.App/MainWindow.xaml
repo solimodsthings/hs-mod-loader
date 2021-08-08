@@ -10,6 +10,7 @@
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
         Title="Himeko Sutori Mod Manager" 
+        ContentRendered="OnWindowContentRendered"
         Height="650" 
         Width="900"
         WindowStartupLocation="CenterScreen">
@@ -87,7 +88,7 @@
                 <Button Grid.Column="0" Padding="4" Margin="4" ToolTip="Add a new mod">
                     Add New Mod
                 </Button>
-                <Button Grid.Column="1" Padding="4" Margin="4" ToolTip="Configure location of Himeko Sutori">
+                <Button x:Name="ButtonSetGameFolder" Click="OnButtonSetGameFolderClick" Grid.Column="1" Padding="4" Margin="4" ToolTip="Configure location of Himeko Sutori">
                     Set Game Folder
                 </Button>
                 <Button Grid.Column="2" Padding="4" Margin="4" ToolTip="Save and apply all mod to game folder">

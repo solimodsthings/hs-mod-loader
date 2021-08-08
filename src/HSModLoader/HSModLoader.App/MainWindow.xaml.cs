@@ -21,51 +21,38 @@ namespace HSModLoader.App
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<ManagedMod> Mods;
-
+        private ModManager Manager;
+        
         public MainWindow()
         {
             InitializeComponent();
-
-            this.Mods = new List<ManagedMod>();
-            this.ListAvailableMods.ItemsSource = Mods;
+            this.Manager = new ModManager();
+        
+            this.ListAvailableMods.ItemsSource = this.Manager.Mods;
 
             // Special case for Superwolf mod which is part of base game install
             // Moves this to mods.json later
-            var superwolf = new ManagedMod()
+            this.Manager.RegisterMod(new ConfigurableMod()
             {
                 Name = "SuperWolf",
                 Version = "1.0",
                 Author = "Nathaniel3W",
                 HasMutator = true,
                 MutatorStartClass = "rpgtacgame.RPGTacMutator_SuperWolf"
-            };
+            });
 
-            this.Mods.Add(superwolf);
             this.ListAvailableMods.SelectedIndex = 0;
-
-            UpdateOrderValue();
-            UpdateInfoBox();
+            this.UpdateModInfoBox();
 
         }
 
-
-        private void UpdateOrderValue()
-        {
-            int order = 1;
-            foreach(var mod in Mods)
-            {
-                mod.Order = order++;
-            }
-        }
-
-        private void UpdateInfoBox()
+        private void UpdateModInfoBox()
         {
             int selection = this.ListAvailableMods.SelectedIndex;
 
             if(selection >= 0)
             {
-                var mod = this.Mods[selection];
+                var mod = this.Manager.Mods[selection];
                 this.LabelModName.Content = mod.Name;
                 this.LabelModVersion.Content = mod.Version;
                 this.LabelAuthorName.Content = mod.Author;
@@ -78,10 +65,35 @@ namespace HSModLoader.App
 
             }
         }
+        private void ShowGameFolderDialog()
+        {
+            this.CanvasFadeOut.Visibility = Visibility.Visible;
+            var dialog = new GameFolderWindow(this.Manager);
+            dialog.Owner = this;
+            var result = dialog.ShowDialog();
+            
+            if(string.IsNullOrEmpty(this.Manager.GameFolderPath) && !(result.HasValue && result.Value))
+            {
+                this.Close();
+            }
 
+        }
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.UpdateInfoBox();
+            this.UpdateModInfoBox();
+        }
+
+        private void OnButtonSetGameFolderClick(object sender, RoutedEventArgs e)
+        {
+            this.ShowGameFolderDialog();
+        }
+
+        private void OnWindowContentRendered(object sender, EventArgs e)
+        {
+            if(string.IsNullOrEmpty(this.Manager.GameFolderPath))
+            {
+                this.ShowGameFolderDialog();
+            }
         }
     }
 }
