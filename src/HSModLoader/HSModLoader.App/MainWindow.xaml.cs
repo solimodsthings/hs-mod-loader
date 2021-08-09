@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +37,11 @@ namespace HSModLoader.App
 
             this.ModViews = new ObservableCollection<ModView>();
             this.ListAvailableMods.ItemsSource = this.ModViews;
-            
+
+            if(!Directory.Exists("mods"))
+            {
+                Directory.CreateDirectory("mods");
+            }
 
             // Special case for SuperWolf mod which is part of base game install
             // Move this to mods.json later
@@ -53,10 +59,7 @@ namespace HSModLoader.App
 
             }
 
-            foreach (var mod in this.Manager.Mods)
-            {
-                this.ModViews.Add(new ModView(mod));
-            }
+            this.RebuildModViews();
 
             this.SelectedMod = new ModView(this.Manager.Mods[0]);
             this.ModInfoPanel.DataContext = this.SelectedMod;
@@ -90,6 +93,15 @@ namespace HSModLoader.App
 
         }
 
+        private void RebuildModViews()
+        {
+            this.ModViews.Clear();
+            foreach (var mod in this.Manager.Mods)
+            {
+                this.ModViews.Add(new ModView(mod));
+            }
+        }
+
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
         {
             int selection = this.ListAvailableMods.SelectedIndex;
@@ -114,14 +126,43 @@ namespace HSModLoader.App
             }
         }
 
+        private void OnControllerUsed(object sender, RoutedEventArgs e)
+        {
+            this.ListAvailableMods.Items.Refresh();
+        }
+
+        private void OnMoveModOrderUp(object sender, RoutedEventArgs e)
+        {
+            int selection = this.ListAvailableMods.SelectedIndex;
+
+            if (selection > 0)
+            {
+                var cmod = this.Manager.Mods[selection];
+                this.Manager.ShiftModOrderUp(selection);
+                this.RebuildModViews();
+                this.ListAvailableMods.SelectedIndex = cmod.OrderIndex;
+            }
+
+        }
+
+        private void OnMoveModOrderDown(object sender, RoutedEventArgs e)
+        {
+            int selection = this.ListAvailableMods.SelectedIndex;
+
+            if (selection < this.Manager.Mods.Count - 1)
+            {
+                var cmod = this.Manager.Mods[selection];
+                this.Manager.ShiftModOrderDown(selection);
+                this.RebuildModViews();
+                this.ListAvailableMods.SelectedIndex = cmod.OrderIndex;
+            }
+        }
+
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.Save();
         }
 
-        private void OnControllerUsed(object sender, RoutedEventArgs e)
-        {
-            this.ListAvailableMods.Items.Refresh();
-        }
+
     }
 }

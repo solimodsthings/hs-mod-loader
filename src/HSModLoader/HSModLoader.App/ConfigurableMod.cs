@@ -19,7 +19,13 @@ namespace HSModLoader.App
     {
         public ModState State { get; set; }
 
-        public int Order { get; set; }
+        public int OrderIndex { get; set; }
+
+        /// <summary>
+        /// The location of unpackaged mod files that will be
+        /// applied to the game folder if this mod is enabled.
+        /// </summary>
+        public string FileRepository { get; set; }
 
         public ConfigurableMod()
         {

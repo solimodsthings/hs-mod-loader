@@ -17,7 +17,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.Order;
+                return _mod.OrderIndex + 1;
             }
         }
 
