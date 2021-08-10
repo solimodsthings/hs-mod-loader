@@ -17,7 +17,8 @@ using System.Windows.Shapes;
 namespace HSModLoader.App
 {
     /// <summary>
-    /// Interaction logic for GameFolderWindow.xaml
+    /// This is a dialog window that allows a user to set the
+    /// path to the game.
     /// </summary>
     public partial class GameFolderWindow : Window
     {
@@ -44,20 +45,18 @@ namespace HSModLoader.App
             if (this.Validator.IsGameFolder(folder))
             {
                 this.Manager.GameFolderPath = folder;
-                // this.Manager.Save();
                 this.DialogResult = true;
                 this.Close();
             }
             else
             {
                 // Check to see if the user selected a subdirectory of the main game
-                // folder. If they did then it is posisble toextract the correct path.
+                // folder. If they did then it is posisble to extract the correct path.
 
                 var possibleMatch = this.Validator.CheckIfParentIsGameFolder(folder, 3);
                 if(!string.IsNullOrEmpty(possibleMatch) && this.Validator.IsGameFolder(possibleMatch))
                 {
                     this.Manager.GameFolderPath = possibleMatch;
-                    // this.Manager.Save();
                     this.DialogResult = true;
                     this.Close();
                 }
@@ -67,14 +66,11 @@ namespace HSModLoader.App
                 }
             }
         }
+
         private void OnCancelButtonClick(object sender, RoutedEventArgs e)
         {
+            this.DialogResult = false;
             this.Close();
-        }
-
-        private void OnGameFolderWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            ((MainWindow)this.Owner).CanvasFadeOut.Visibility = Visibility.Hidden;
         }
 
     }

@@ -11,13 +11,13 @@ namespace HSModLoader.App
 
     public class ModView : INotifyPropertyChanged
     {
-        private ConfigurableMod _mod;
+        private ModConfiguration _configuration;
 
         public int Order
         {
             get
             {
-                return _mod.OrderIndex + 1;
+                return _configuration.OrderIndex + 1;
             }
         }
 
@@ -25,7 +25,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.Name;
+                return _configuration.Mod?.Name ?? string.Empty;
             }
         }
 
@@ -33,13 +33,13 @@ namespace HSModLoader.App
         {
             get
             {
-                if (_mod.Name.Length <= 32)
+                if (this.Name.Length <= 32)
                 {
-                    return _mod.Name;
+                    return this.Name;
                 }
                 else
                 {
-                    return _mod.Name.Substring(0, 29) + "...";
+                    return this.Name.Substring(0, 29) + "...";
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.Version;
+                return _configuration.Mod?.Version ?? string.Empty;
             }
         }
 
@@ -56,7 +56,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.Author;
+                return _configuration.Mod?.Author ?? string.Empty;
             }
         }
 
@@ -64,12 +64,12 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.State == ModState.Enabled;
+                return _configuration.State == ModState.Enabled;
             }
             set {
                 if (value)
                 {
-                    _mod.State = ModState.Enabled;
+                    _configuration.State = ModState.Enabled;
                     this.Refresh();
                 }
             }
@@ -79,13 +79,13 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.State == ModState.Disabled;
+                return _configuration.State == ModState.Disabled;
             }
             set
             {
                 if (value)
                 {
-                    _mod.State = ModState.Disabled;
+                    _configuration.State = ModState.Disabled;
                     this.Refresh();
                 }
             }
@@ -95,13 +95,13 @@ namespace HSModLoader.App
         {
             get
             {
-                return _mod.State == ModState.SoftDisabled;
+                return _configuration.State == ModState.SoftDisabled;
             }
             set
             {
                 if (value)
                 {
-                    _mod.State = ModState.SoftDisabled;
+                    _configuration.State = ModState.SoftDisabled;
                     this.Refresh();
                 }
             }
@@ -111,15 +111,15 @@ namespace HSModLoader.App
         {
             get
             {
-                if(_mod.State == ModState.Enabled)
+                if(_configuration.State == ModState.Enabled)
                 {
                     return "Enabled";
                 }
-                else if(_mod.State == ModState.Disabled)
+                else if(_configuration.State == ModState.Disabled)
                 {
                     return "Disabled";
                 }
-                else if (_mod.State == ModState.SoftDisabled)
+                else if (_configuration.State == ModState.SoftDisabled)
                 {
                     return "Soft-Disabled";
                 }
@@ -132,14 +132,14 @@ namespace HSModLoader.App
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ModView(ConfigurableMod mod) 
+        public ModView(ModConfiguration configuration) 
         {
-            this._mod = mod;
+            this._configuration = configuration;
         }
 
-        public void Set(ConfigurableMod mod)
+        public void Set(ModConfiguration configuration)
         {
-            this._mod = mod;
+            this._configuration = configuration;
             this.Refresh();
 
         }

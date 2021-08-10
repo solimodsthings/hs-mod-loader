@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using HSModLoader;
+using Microsoft.Win32;
 
 namespace HSModLoader.App
 {
@@ -43,46 +44,53 @@ namespace HSModLoader.App
                 Directory.CreateDirectory("mods");
             }
 
-            // Special case for SuperWolf mod which is part of base game install
-            // Move this to mods.json later
-
-            if (this.Manager.Mods.Count == 0)
-            {
-                this.Manager.RegisterMod(new Mod()
-                {
-                    Name = "SuperWolf",
-                    Version = "1.0",
-                    Author = "Nathaniel3W",
-                    HasMutator = true,
-                    MutatorStartClass = "rpgtacgame.RPGTacMutator_SuperWolf"
-                });
-
-            }
-
             this.RebuildModViews();
 
-            this.SelectedMod = new ModView(this.Manager.Mods[0]);
+            this.SelectedMod = new ModView(new ModConfiguration());
             this.ModInfoPanel.DataContext = this.SelectedMod;
             this.ModStatePanel.DataContext = this.SelectedMod;
 
-            this.ListAvailableMods.SelectedIndex = 0;
+            if(this.Manager.ModConfigurations.Count > 0)
+            {
+                this.ListAvailableMods.SelectedIndex = 0;
+            }
 
+        }
+
+        /// <summary>
+        /// Shows or hides a dark, but transparent overlay across the entirety of the application.
+        /// </summary>
+        /// <param name="show">True to show the overlay or false to turn it off.</param>
+        public void ShowOverlay(bool show)
+        {
+            if(show)
+            {
+                this.CanvasFadeOut.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.CanvasFadeOut.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Save()
         {
-            // TODO saving screen
             this.Manager.SaveToFile();
         }
 
         private void ShowGameFolderDialog()
         {
-            this.CanvasFadeOut.Visibility = Visibility.Visible;
+            this.ShowOverlay(true);
+
             var dialog = new GameFolderWindow(this.Manager);
             dialog.Owner = this;
+
             var result = dialog.ShowDialog();
-            
-            if(string.IsNullOrEmpty(this.Manager.GameFolderPath) && !(result.HasValue && result.Value))
+
+            // Exit the application if the user doesn't want
+            // to provide the game folder path and one hasn't been
+            // defined yet (basically a first-time use scenario)
+            if (result != true && string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
                 this.Close();
             }
@@ -91,12 +99,14 @@ namespace HSModLoader.App
                 this.Save();
             }
 
+            this.ShowOverlay(false);
+
         }
 
         private void RebuildModViews()
         {
             this.ModViews.Clear();
-            foreach (var mod in this.Manager.Mods)
+            foreach (var mod in this.Manager.ModConfigurations)
             {
                 this.ModViews.Add(new ModView(mod));
             }
@@ -106,10 +116,15 @@ namespace HSModLoader.App
         {
             int selection = this.ListAvailableMods.SelectedIndex;
 
-            if (selection >= 0)
+            if (selection >= 0 && selection < this.Manager.ModConfigurations.Count)
             {
-                var mod = this.Manager.Mods[selection];
+                var mod = this.Manager.ModConfigurations[selection];
                 this.SelectedMod.Set(mod);
+                this.InfoPanel.IsEnabled = true;
+            }
+            else
+            {
+                this.InfoPanel.IsEnabled = false;
             }
         }
 
@@ -137,10 +152,10 @@ namespace HSModLoader.App
 
             if (selection > 0)
             {
-                var cmod = this.Manager.Mods[selection];
+                var configuration = this.Manager.ModConfigurations[selection];
                 this.Manager.ShiftModOrderUp(selection);
                 this.RebuildModViews();
-                this.ListAvailableMods.SelectedIndex = cmod.OrderIndex;
+                this.ListAvailableMods.SelectedIndex = configuration.OrderIndex;
             }
 
         }
@@ -149,12 +164,53 @@ namespace HSModLoader.App
         {
             int selection = this.ListAvailableMods.SelectedIndex;
 
-            if (selection < this.Manager.Mods.Count - 1)
+            if (selection < this.Manager.ModConfigurations.Count - 1)
             {
-                var cmod = this.Manager.Mods[selection];
+                var configuration = this.Manager.ModConfigurations[selection];
                 this.Manager.ShiftModOrderDown(selection);
                 this.RebuildModViews();
-                this.ListAvailableMods.SelectedIndex = cmod.OrderIndex;
+                this.ListAvailableMods.SelectedIndex = configuration.OrderIndex;
+            }
+        }
+
+
+        private void OnListFileDropped(object sender, DragEventArgs e)
+        {
+
+            var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+
+            if(files != null)
+            {
+                var v = new Validator();
+                foreach (var filepath in files)
+                {
+                    if (File.Exists(filepath) && v.IsModPackage(filepath))
+                    {
+                        this.Manager.RegisterModFromFile(filepath);
+                        this.RebuildModViews();
+                        this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                    }
+                }
+            }
+
+        }
+
+        private void OnButtonAddNewModClick(object sender, RoutedEventArgs e)
+        {
+            var selectFile = new OpenFileDialog();
+            selectFile.CheckFileExists = true;
+            selectFile.DefaultExt = ".hsmod"; // Default file extension
+            selectFile.Filter = "Himeko Sutori Mod (.hsmod)|*.hsmod"; // Filter files by extension
+
+            if (selectFile.ShowDialog() == true)
+            {
+                var v = new Validator();
+                if (File.Exists(selectFile.FileName) && v.IsModPackage(selectFile.FileName))
+                {
+                    this.Manager.RegisterModFromFile(selectFile.FileName);
+                    this.RebuildModViews();
+                    this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                }
             }
         }
 
@@ -162,7 +218,5 @@ namespace HSModLoader.App
         {
             this.Save();
         }
-
-
     }
 }
