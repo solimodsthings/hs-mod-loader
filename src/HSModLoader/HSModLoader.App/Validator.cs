@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,6 +70,49 @@ namespace HSModLoader.App
             }
 
             return null;
+        }
+
+        public bool IsModPackage(string filepath)
+        {
+
+            bool result = false;
+
+            if(File.Exists(filepath))
+            {
+                var temporaryFolder = Path.Combine(Path.GetTempPath(), "HIMEKO-" + Path.GetRandomFileName());
+
+                try
+                {
+                    Directory.CreateDirectory(temporaryFolder);
+                    ZipFile.ExtractToDirectory(filepath, temporaryFolder);
+
+                    var modinfo = temporaryFolder + Path.DirectorySeparatorChar + "mod.json";
+
+                    if (File.Exists(modinfo))
+                    {
+                        var contents = File.ReadAllText(modinfo);
+
+                        var mod = JsonConvert.DeserializeObject<Mod>(contents);
+
+                        // Directory.Delete(temporaryFolder, true);
+
+                        result = true;
+                    }
+
+                }
+                catch(Exception e)
+                {
+                    e.AppendToLogFile();
+                }
+
+                if(Directory.Exists(temporaryFolder))
+                {
+                    // Directory.Delete(temporaryFolder, true);
+                }
+
+            }
+
+            return result;
         }
 
     }
