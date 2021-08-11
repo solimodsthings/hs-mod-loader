@@ -33,17 +33,17 @@ namespace HSModLoader.App
         public MainWindow()
         {
             InitializeComponent();
+
+            if (!Directory.Exists("mods"))
+            {
+                Directory.CreateDirectory("mods");
+            }
+
             this.Manager = new ModManager();
             this.Manager.LoadFromFile();
 
             this.ModViews = new ObservableCollection<ModView>();
             this.ListAvailableMods.ItemsSource = this.ModViews;
-
-            if(!Directory.Exists("mods"))
-            {
-                Directory.CreateDirectory("mods");
-            }
-
             this.RebuildModViews();
 
             this.SelectedMod = new ModView(new ModConfiguration());
@@ -57,11 +57,27 @@ namespace HSModLoader.App
 
         }
 
+        private void RebuildModViews()
+        {
+            this.ModViews.Clear();
+            foreach (var mod in this.Manager.ModConfigurations)
+            {
+                this.ModViews.Add(new ModView(mod));
+            }
+        }
+
+        // This is a method in case we need to put an task-in-progress animation
+        // when data is being serialized to disk
+        private void Save()
+        {
+            this.Manager.SaveToFile();
+        }
+
         /// <summary>
-        /// Shows or hides a dark, but transparent overlay across the entirety of the application.
+        /// Shows or hides a dark, transparent overlay across the entirety of the application window.
         /// </summary>
         /// <param name="show">True to show the overlay or false to turn it off.</param>
-        public void ShowOverlay(bool show)
+        private void ShowOverlay(bool show)
         {
             if(show)
             {
@@ -71,11 +87,6 @@ namespace HSModLoader.App
             {
                 this.CanvasFadeOut.Visibility = Visibility.Collapsed;
             }
-        }
-
-        private void Save()
-        {
-            this.Manager.SaveToFile();
         }
 
         private void ShowGameFolderDialog()
@@ -113,15 +124,6 @@ namespace HSModLoader.App
 
             this.ShowOverlay(false);
 
-        }
-
-        private void RebuildModViews()
-        {
-            this.ModViews.Clear();
-            foreach (var mod in this.Manager.ModConfigurations)
-            {
-                this.ModViews.Add(new ModView(mod));
-            }
         }
 
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
@@ -185,8 +187,7 @@ namespace HSModLoader.App
             }
         }
 
-
-        private void OnListFileDropped(object sender, DragEventArgs e)
+        private void OnAddNewModByDragDrop(object sender, DragEventArgs e)
         {
 
             var files = e.Data.GetData(DataFormats.FileDrop) as string[];
@@ -199,17 +200,7 @@ namespace HSModLoader.App
                     if (File.Exists(filepath) && v.IsModPackage(filepath))
                     {
                         var result = this.Manager.RegisterModFromFile(filepath);
-
-                        if(result.IsSuccessful)
-                        {
-                            this.RebuildModViews();
-                            this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
-                        }
-                        else
-                        {
-                            this.ShowPopupMessage("Warning", result.ErrorMessage);
-                        }
-                        
+                        this.HandleRegistrationResult(result);
                     }
                 }
             }
@@ -229,18 +220,21 @@ namespace HSModLoader.App
                 if (File.Exists(browse.FileName) && v.IsModPackage(browse.FileName))
                 {
                     var result = this.Manager.RegisterModFromFile(browse.FileName);
-
-                    if(result.IsSuccessful)
-                    {
-                        this.RebuildModViews();
-                        this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
-                    }
-                    else
-                    {
-                        this.ShowPopupMessage("Warning", result.ErrorMessage);
-                    }
-                    
+                    this.HandleRegistrationResult(result);
                 }
+            }
+        }
+
+        private void HandleRegistrationResult(RegistrationResult result)
+        {
+            if (result.IsSuccessful)
+            {
+                this.RebuildModViews();
+                this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+            }
+            else
+            {
+                this.ShowPopupMessage("Warning", result.ErrorMessage);
             }
         }
 

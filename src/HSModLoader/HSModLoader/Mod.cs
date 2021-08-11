@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace HSModLoader
 {
+    /// <summary>
+    /// An instance of this class represents a mod
+    /// that can be installed on top of the base game.
+    /// </summary>
     public class Mod
     {
         public string Name { get; set; }

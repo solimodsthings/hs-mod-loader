@@ -70,7 +70,7 @@
                     x:Name="ListAvailableMods" 
                     SelectionMode="Single" 
                     AllowDrop="True"
-                    Drop="OnListFileDropped"
+                    Drop="OnAddNewModByDragDrop"
                     SelectionChanged="OnSelectedModChanged"
                     VirtualizingPanel.VirtualizationMode="Recycling">
                     

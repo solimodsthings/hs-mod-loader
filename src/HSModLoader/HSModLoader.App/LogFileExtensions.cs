@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
+    /// <summary>
+    /// Used to send caught Exceptions to an error log file.
+    /// </summary>
     public static class LogFileExtensions
     {
         public static readonly string ErrorLog = "error.log";

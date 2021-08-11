@@ -20,12 +20,12 @@ namespace HSModLoader.App
     public class ModManager
     {
         [JsonIgnore]
-        public readonly string ConfigurationFile = "config.json";
+        public static readonly string ConfigurationFile = "config.json";
         [JsonIgnore]
-        public readonly string ModInfoFile = "mod.json";
+        public static readonly string ModInfoFile = "mod.json";
 
         [JsonIgnore]
-        public readonly string ModFolder = "mods";
+        public static readonly string ModFolder = "mods";
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 

@@ -6,9 +6,14 @@ namespace HSModLoader
     {
         Script,
         Content,
-        Localization,
+        Localization
     }
 
+    /// <summary>
+    /// An instance of this class represents a single script, 
+    /// content pacakge, or localization file that is part of
+    /// a greater mod.
+    /// </summary>
     public class ModFile
     {
         public string Name { get; set; }

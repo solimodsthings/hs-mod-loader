@@ -28,6 +28,7 @@ namespace HSModLoader.App
         public GameFolderWindow(ModManager manager)
         {
             InitializeComponent();
+
             this.Manager = manager;
             this.Validator = new Validator();
 

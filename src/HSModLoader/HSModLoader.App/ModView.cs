@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
-
+    /// <summary>
+    /// Used for displaying mod information in the main window's ordered table of mods.
+    /// </summary>
     public class ModView : INotifyPropertyChanged
     {
         private ModConfiguration _configuration;

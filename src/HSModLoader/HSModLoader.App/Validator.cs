@@ -9,8 +9,15 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
+    // Not yet sure if this should just be a set of static methods or extension methods
     public class Validator
     {
+        /// <summary>
+        /// Checks whether the specified path is the root folder
+        /// containing the game.
+        /// </summary>
+        /// <param name="path">The path to validate.</param>
+        /// <returns>True if the path is the root folder containing the game, else false.</returns>
         public bool IsGameFolder(string path)
         {
             try
@@ -40,6 +47,14 @@ namespace HSModLoader.App
             return false;
         }
 
+        /// <summary>
+        /// Checks if the parent folder of the specified path is the root
+        /// folder containing the game. This method can recurse up the directory
+        /// hierarchy.
+        /// </summary>
+        /// <param name="path">The path whose parent folder needs to be validated.</param>
+        /// <param name="recurse">The number of times this method should recurse up the directory hierarchy.</param>
+        /// <returns></returns>
         public string CheckIfParentIsGameFolder(string path, int recurse = 0)
         {
             try
@@ -72,6 +87,13 @@ namespace HSModLoader.App
             return null;
         }
 
+        /// <summary>
+        /// Checks if the file at the specificed path is a mod package for the game.
+        /// This method unpackages the mod into a temporary folder which is immediately
+        /// deleted after the validation is complete.
+        /// </summary>
+        /// <param name="filepath">The path to the file to check.</param>
+        /// <returns>True if the file is a mod package, otherwise it is false.</returns>
         public bool IsModPackage(string filepath)
         {
 
@@ -79,14 +101,14 @@ namespace HSModLoader.App
 
             if(File.Exists(filepath))
             {
-                var temporaryFolder = Path.Combine(Path.GetTempPath(), "HIMEKO-" + Path.GetRandomFileName());
+                var temporaryFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
                 try
                 {
                     Directory.CreateDirectory(temporaryFolder);
                     ZipFile.ExtractToDirectory(filepath, temporaryFolder);
 
-                    var modinfo = temporaryFolder + Path.DirectorySeparatorChar + "mod.json";
+                    var modinfo = temporaryFolder + Path.DirectorySeparatorChar + ModManager.ModInfoFile;
 
                     if (File.Exists(modinfo))
                     {
@@ -94,9 +116,10 @@ namespace HSModLoader.App
 
                         var mod = JsonConvert.DeserializeObject<Mod>(contents);
 
-                        // Directory.Delete(temporaryFolder, true);
-
-                        result = true;
+                        if(mod != null)
+                        {
+                            result = true;
+                        }
                     }
 
                 }
@@ -107,7 +130,7 @@ namespace HSModLoader.App
 
                 if(Directory.Exists(temporaryFolder))
                 {
-                    // Directory.Delete(temporaryFolder, true);
+                    Directory.Delete(temporaryFolder, true);
                 }
 
             }
