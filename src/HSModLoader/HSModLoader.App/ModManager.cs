@@ -10,6 +10,13 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
+
+    public struct RegistrationResult
+    {
+        public bool IsSuccessful { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
     public class ModManager
     {
         [JsonIgnore]
@@ -72,6 +79,19 @@ namespace HSModLoader.App
             File.WriteAllText(ConfigurationFile, json);
         }
 
+        private bool Exists(string modname, string version)
+        {
+            foreach(var mod in ModConfigurations.Select(x => x.Mod))
+            {
+                if(mod.Name.Equals(modname) && mod.Version.Equals(version))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void RegisterMod(Mod mod, string repository)
         {
             var configuration = new ModConfiguration();
@@ -86,8 +106,10 @@ namespace HSModLoader.App
             
         }
 
-        public void RegisterModFromFile(string filepath)
+        public RegistrationResult RegisterModFromFile(string filepath)
         {
+            var result = new RegistrationResult() { IsSuccessful = false };
+
             if (File.Exists(filepath))
             {
                 // TODO: Think of a more usable folder path
@@ -105,15 +127,36 @@ namespace HSModLoader.App
                         var contents = File.ReadAllText(modinfo);
                         var mod = JsonConvert.DeserializeObject<Mod>(contents);
 
-                        this.RegisterMod(mod, destination);
+                        if(!this.Exists(mod.Name, mod.Version))
+                        {
+                            this.RegisterMod(mod, destination);
+                            result.IsSuccessful = true;
+                        }
+                        else
+                        {
+                            result.ErrorMessage = string.Format("Could not load mod. '{0}' version {1} already exists!", mod.Name, mod.Version);
+                        }
+
+                    }
+                    else
+                    {
+                        result.ErrorMessage = "Could not load mod. Could not find and extract mod.json within the mod package file.";
                     }
 
                 }
                 catch (Exception e)
                 {
                     e.AppendToLogFile();
+                    result.ErrorMessage = "Could not load mod. See error.log file.";
                 }
             }
+            else
+            {
+                result.ErrorMessage = "Mod package file could not be loaded because it cannot be accessed or does not exist.";
+            }
+
+            return result;
+
         }
 
         /// <summary>

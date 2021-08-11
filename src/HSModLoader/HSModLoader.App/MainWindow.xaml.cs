@@ -103,6 +103,18 @@ namespace HSModLoader.App
 
         }
 
+        private void ShowPopupMessage(string header, string body)
+        {
+            this.ShowOverlay(true);
+            var dialog = new MessageWindow(header, body);
+            dialog.Owner = this;
+
+            dialog.ShowDialog();
+
+            this.ShowOverlay(false);
+
+        }
+
         private void RebuildModViews()
         {
             this.ModViews.Clear();
@@ -128,7 +140,7 @@ namespace HSModLoader.App
             }
         }
 
-        private void OnButtonSetGameFolderClick(object sender, RoutedEventArgs e)
+        private void OnSetGameFolderButtonClick(object sender, RoutedEventArgs e)
         {
             this.ShowGameFolderDialog();
         }
@@ -186,37 +198,61 @@ namespace HSModLoader.App
                 {
                     if (File.Exists(filepath) && v.IsModPackage(filepath))
                     {
-                        this.Manager.RegisterModFromFile(filepath);
-                        this.RebuildModViews();
-                        this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                        var result = this.Manager.RegisterModFromFile(filepath);
+
+                        if(result.IsSuccessful)
+                        {
+                            this.RebuildModViews();
+                            this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                        }
+                        else
+                        {
+                            this.ShowPopupMessage("Warning", result.ErrorMessage);
+                        }
+                        
                     }
                 }
             }
 
         }
 
-        private void OnButtonAddNewModClick(object sender, RoutedEventArgs e)
+        private void OnAddNewModButtonClick(object sender, RoutedEventArgs e)
         {
-            var selectFile = new OpenFileDialog();
-            selectFile.CheckFileExists = true;
-            selectFile.DefaultExt = ".hsmod"; // Default file extension
-            selectFile.Filter = "Himeko Sutori Mod (.hsmod)|*.hsmod"; // Filter files by extension
+            var browse = new OpenFileDialog();
+            browse.CheckFileExists = true;
+            browse.DefaultExt = ".hsmod"; // Default file extension
+            browse.Filter = "Himeko Sutori Mod (.hsmod)|*.hsmod"; // Filter files by extension
 
-            if (selectFile.ShowDialog() == true)
+            if (browse.ShowDialog() == true)
             {
                 var v = new Validator();
-                if (File.Exists(selectFile.FileName) && v.IsModPackage(selectFile.FileName))
+                if (File.Exists(browse.FileName) && v.IsModPackage(browse.FileName))
                 {
-                    this.Manager.RegisterModFromFile(selectFile.FileName);
-                    this.RebuildModViews();
-                    this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                    var result = this.Manager.RegisterModFromFile(browse.FileName);
+
+                    if(result.IsSuccessful)
+                    {
+                        this.RebuildModViews();
+                        this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
+                    }
+                    else
+                    {
+                        this.ShowPopupMessage("Warning", result.ErrorMessage);
+                    }
+                    
                 }
             }
+        }
+
+        private void OnSaveButtonClick(object sender, RoutedEventArgs e)
+        {
+            this.ShowPopupMessage("Debug", "Debug Message!");
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.Save();
         }
+
     }
 }
