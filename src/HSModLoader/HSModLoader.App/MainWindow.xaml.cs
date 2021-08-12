@@ -225,7 +225,7 @@ namespace HSModLoader.App
             }
         }
 
-        private void HandleRegistrationResult(RegistrationResult result)
+        private void HandleRegistrationResult(Result result)
         {
             if (result.IsSuccessful)
             {

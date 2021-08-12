@@ -75,6 +75,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="LogFileExtensions.cs" />
+    <Compile Include="ModFileMapping.cs" />
     <Compile Include="ModView.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">

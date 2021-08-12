@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
-
-    public struct RegistrationResult
+    public struct Result
     {
         public bool IsSuccessful { get; set; }
         public string ErrorMessage { get; set; }
@@ -23,9 +22,16 @@ namespace HSModLoader.App
         public static readonly string ConfigurationFile = "config.json";
         [JsonIgnore]
         public static readonly string ModInfoFile = "mod.json";
-
         [JsonIgnore]
         public static readonly string ModFolder = "mods";
+        [JsonIgnore]
+        public static readonly string ScriptsFolder = @"RPGTacGame\Script";
+        [JsonIgnore]
+        public static readonly string ContentFolder = @"RPGTacGame\Content";
+        [JsonIgnore]
+        public static readonly string LocalizationFolder = @"RPGTacGame\Localization";
+        [JsonIgnore]
+        public static readonly string ManagedModPrefix = "managed-mod-";
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 
@@ -92,23 +98,9 @@ namespace HSModLoader.App
             return false;
         }
 
-        private void RegisterMod(Mod mod, string repository)
+        public Result RegisterModFromFile(string filepath)
         {
-            var configuration = new ModConfiguration();
-
-            configuration.Mod = mod;
-            configuration.Path = repository;
-            configuration.State = ModState.Disabled;
-
-            // order matters for next two statements
-            this.ModConfigurations.Add(configuration); 
-            configuration.OrderIndex = this.ModConfigurations.Count - 1;
-            
-        }
-
-        public RegistrationResult RegisterModFromFile(string filepath)
-        {
-            var result = new RegistrationResult() { IsSuccessful = false };
+            var result = new Result() { IsSuccessful = false };
 
             if (File.Exists(filepath))
             {
@@ -127,10 +119,19 @@ namespace HSModLoader.App
                         var contents = File.ReadAllText(modinfo);
                         var mod = JsonConvert.DeserializeObject<Mod>(contents);
 
-                        if(!this.Exists(mod.Name, mod.Version))
+                        if (!this.Exists(mod.Name, mod.Version))
                         {
-                            this.RegisterMod(mod, destination);
-                            result.IsSuccessful = true;
+                            var mappingResult = this.RegisterMod(mod, destination);
+
+                            if (mappingResult.IsSuccessful)
+                            {
+                                result.IsSuccessful = true;
+                            }
+                            else
+                            {
+                                result.ErrorMessage += mappingResult.ErrorMessage;
+                            }
+                            
                         }
                         else
                         {
@@ -158,6 +159,105 @@ namespace HSModLoader.App
             return result;
 
         }
+
+        private Result RegisterMod(Mod mod, string repository)
+        {
+            var configuration = new ModConfiguration();
+
+            configuration.Mod = mod;
+            configuration.Path = repository;
+            configuration.State = ModState.Disabled;
+
+            var mappingResult = this.CreateFilesMappings(configuration);
+
+            // order matters for next two statements
+            if (mappingResult.IsSuccessful)
+            {
+                this.ModConfigurations.Add(configuration);
+                configuration.OrderIndex = this.ModConfigurations.Count - 1;
+            }
+
+            return mappingResult;
+        }
+
+        private Result CreateFilesMappings(ModConfiguration configuration)
+        {
+            bool invalidLocalizationFile = false;
+            bool invalidFileType = false;
+
+            foreach (var file in configuration.Mod.ModFiles)
+            {
+                var mapping = new ModFileMapping();
+
+                mapping.Type = file.Type;
+                mapping.SourceFile = file.Name;
+
+                if (file.Type == ModFileType.Script)
+                {
+
+                    mapping.DestinationFile = Path.Combine(ScriptsFolder, ManagedModPrefix + file.Name);
+                    configuration.Mappings.Add(mapping);
+
+                }
+                else if (file.Type == ModFileType.Content)
+                {
+
+                    mapping.DestinationFile = Path.Combine(ContentFolder, ManagedModPrefix + file.Name);
+                    configuration.Mappings.Add(mapping);
+
+                }
+                else if (file.Type == ModFileType.Localization)
+                {
+
+                    var tokens = file.Name.Split('.');
+                    var language = tokens[tokens.Length - 1];
+                    var localizationFolder = Path.Combine(LocalizationFolder, language.ToUpper());
+
+                    if (Directory.Exists(Path.Combine(this.GameFolderPath, localizationFolder)))
+                    {
+                        mapping.DestinationFile = Path.Combine(localizationFolder, ManagedModPrefix + file.Name);
+                        configuration.Mappings.Add(mapping);
+                    }
+                    else
+                    {
+                        invalidLocalizationFile = true;
+                        LogFileExtensions.AppendToLogFile(string.Format(
+                            "Mod '{0}' version {1} has a localization file that does not match any current supported game language. Invalid file was '{2}'.", configuration.Mod.Name, configuration.Mod.Version, file.Name));
+                    }
+
+                }
+                else
+                {
+                    invalidFileType = true;
+                    LogFileExtensions.AppendToLogFile(string.Format(
+                            "Mod '{0}' version {1} has a file type that is not yet supported by this mod loader. Invalid file was '{2}'. ", configuration.Mod.Name, configuration.Mod.Version, file.Name));
+                }
+            }
+
+            var result = new Result() { IsSuccessful = true };
+
+            if(invalidLocalizationFile)
+            {
+                result.IsSuccessful = false;
+                result.ErrorMessage += " Mod contains an invalid localization file.";
+            }
+            else if(invalidFileType)
+            {
+                result.IsSuccessful = false;
+                result.ErrorMessage += " Mod contains an invalid file type.";
+            }
+
+            if(!result.IsSuccessful)
+            {
+                result.ErrorMessage += " See error.log for details.";
+                result.ErrorMessage = result.ErrorMessage.Trim();
+            }
+
+            return result;
+
+        }
+
+       
 
         /// <summary>
         /// Shifts a mod up the order list by one.
