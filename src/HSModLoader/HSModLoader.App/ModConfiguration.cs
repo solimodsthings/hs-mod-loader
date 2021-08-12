@@ -46,5 +46,12 @@ namespace HSModLoader.App
 
         public int OrderIndex { get; set; }
 
+        public List<ModFileMapping> Mappings { get; set; }
+
+        public ModConfiguration()
+        {
+            this.Mappings = new List<ModFileMapping>();
+        }
+
     }
 }
