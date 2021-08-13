@@ -138,5 +138,57 @@ namespace HSModLoader.App
             return result;
         }
 
+        public bool IsEnabledInMutatorLoader(GameConfiguration mutatorLoader, ModConfiguration configuration)
+        {
+
+            if(configuration.Mod.HasMutator)
+            {
+                if (!string.IsNullOrEmpty(configuration.Mod.MutatorStartClass))
+                {
+                    var mutatorsItem = mutatorLoader.Sections.SelectMany(x => x.Items).Where(y => y.Key == "MutatorsLoaded").FirstOrDefault();
+
+                    var mutators = mutatorsItem.Value.Split(',');
+
+                    foreach(var m in mutators)
+                    {
+                        if(m.Equals(configuration.Mod.MutatorStartClass))
+                        {
+                            return true;
+                        }
+                    }
+
+                }
+            }
+
+            return false;
+
+        }
+
+        /// <summary>
+        /// Checks if the specified mod (as represented by an
+        /// insance of ModConfiguration) is installed in the game
+        /// directory. This method will individually check each file 
+        /// mappings of ModConfiguration.
+        /// </summary>
+        /// <param name="configuration">The mod to check</param>
+        /// <returns>A Result object with the value true if all mapped files
+        /// exist in the game directory. Otherwise the Result will have
+        /// a Value of false and a list of issues identified in the
+        /// Message property.</returns>
+        public Result IsInstalled(ModConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Result IsPartiallyInstalled(ModConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Result IsUninstalled(ModConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

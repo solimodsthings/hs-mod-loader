@@ -227,20 +227,23 @@ namespace HSModLoader.App
 
         private void HandleRegistrationResult(Result result)
         {
-            if (result.IsSuccessful)
+            if (result.Value)
             {
                 this.RebuildModViews();
                 this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
             }
             else
             {
-                this.ShowPopupMessage("Warning", result.ErrorMessage);
+                this.ShowPopupMessage("Warning", result.Message);
             }
         }
 
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
-            this.ShowPopupMessage("Debug", "Debug Message!");
+            this.ShowOverlay(true);
+            // TODO: show an in-progress animation
+            this.Manager.ApplyMods();
+            this.ShowOverlay(false);
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)

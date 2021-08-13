@@ -77,6 +77,7 @@
     <Compile Include="LogFileExtensions.cs" />
     <Compile Include="ModFileMapping.cs" />
     <Compile Include="ModView.cs" />
+    <Compile Include="Result.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">
       <DependentUpon>GameFolderWindow.xaml</DependentUpon>
