@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameConfiguration.cs" />
+    <Compile Include="GameConfigurationItem.cs" />
+    <Compile Include="GameConfigurationSection.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="ModDependency.cs" />
     <Compile Include="ModFile.cs" />
