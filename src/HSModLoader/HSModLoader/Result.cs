@@ -4,7 +4,7 @@ namespace HSModLoader
 {
     public class Result
     {
-        public bool Value { get; set; }
-        public string Message { get; set; }
+        public bool IsSuccessful { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

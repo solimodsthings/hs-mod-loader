@@ -103,7 +103,7 @@ namespace HSModLoader
 
         public Result RegisterModFromFile(string filepath)
         {
-            var result = new Result() { Value = false };
+            var result = new Result() { IsSuccessful = false };
 
             if (File.Exists(filepath))
             {
@@ -126,37 +126,37 @@ namespace HSModLoader
                         {
                             var mappingResult = this.RegisterMod(mod, destination);
 
-                            if (mappingResult.Value)
+                            if (mappingResult.IsSuccessful)
                             {
-                                result.Value = true;
+                                result.IsSuccessful = true;
                             }
                             else
                             {
-                                result.Message += mappingResult.Message;
+                                result.ErrorMessage += mappingResult.ErrorMessage;
                             }
                             
                         }
                         else
                         {
-                            result.Message = string.Format("Could not load mod. '{0}' version {1} already exists!", mod.Name, mod.Version);
+                            result.ErrorMessage = string.Format("Could not load mod. '{0}' version {1} already exists!", mod.Name, mod.Version);
                         }
 
                     }
                     else
                     {
-                        result.Message = "Could not load mod. Could not find and extract mod.json within the mod package file.";
+                        result.ErrorMessage = "Could not load mod. Could not find and extract mod.json within the mod package file.";
                     }
 
                 }
                 catch (Exception e)
                 {
                     e.AppendToLogFile();
-                    result.Message = "Could not load mod. See error.log file.";
+                    result.ErrorMessage = "Could not load mod. See error.log file.";
                 }
             }
             else
             {
-                result.Message = "Mod package file could not be loaded because it cannot be accessed or does not exist.";
+                result.ErrorMessage = "Mod package file could not be loaded because it cannot be accessed or does not exist.";
             }
 
             return result;
@@ -174,7 +174,7 @@ namespace HSModLoader
             var mappingResult = this.CreateFilesMappings(configuration);
 
             // order matters for next two statements
-            if (mappingResult.Value)
+            if (mappingResult.IsSuccessful)
             {
                 this.ModConfigurations.Add(configuration);
                 configuration.OrderIndex = this.ModConfigurations.Count - 1;
@@ -237,23 +237,23 @@ namespace HSModLoader
                 }
             }
 
-            var result = new Result() { Value = true };
+            var result = new Result() { IsSuccessful = true };
 
             if(invalidLocalizationFile)
             {
-                result.Value = false;
-                result.Message += " Mod contains an invalid localization file.";
+                result.IsSuccessful = false;
+                result.ErrorMessage += " Mod contains an invalid localization file.";
             }
             else if(invalidFileType)
             {
-                result.Value = false;
-                result.Message += " Mod contains an invalid file type.";
+                result.IsSuccessful = false;
+                result.ErrorMessage += " Mod contains an invalid file type.";
             }
 
-            if(!result.Value)
+            if(!result.IsSuccessful)
             {
-                result.Message += " See error.log for details.";
-                result.Message = result.Message.Trim();
+                result.ErrorMessage += " See error.log for details.";
+                result.ErrorMessage = result.ErrorMessage.Trim();
             }
 
             return result;
