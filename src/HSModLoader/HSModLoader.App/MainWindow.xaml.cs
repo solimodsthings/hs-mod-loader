@@ -227,14 +227,14 @@ namespace HSModLoader.App
 
         private void HandleRegistrationResult(Result result)
         {
-            if (result.Value)
+            if (result.IsSuccessful)
             {
                 this.RebuildModViews();
                 this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
             }
             else
             {
-                this.ShowPopupMessage("Warning", result.Message);
+                this.ShowPopupMessage("Warning", result.ErrorMessage);
             }
         }
 

@@ -38,6 +38,33 @@ namespace HSModLoader.App
                 this.ButtonCancelGameFolder.Visibility = Visibility.Visible;
             }
         }
+        private void OnAutodetectButtonClick(object sender, RoutedEventArgs e)
+        {
+            
+
+            try
+            {
+                var autodetector = new GameFolderAutodetector();
+                var result = autodetector.TryAutodetect();
+
+                if(result.IsSuccessful)
+                {
+                    this.TextBoxGameFolderPath.Text = autodetector.AutodetectedGameFolder;
+                    this.ShowErrorMessage(false);
+                }
+                else
+                {
+                    this.ShowErrorMessage(true, result.ErrorMessage);
+                }
+
+            }
+            catch(Exception ex)
+            {
+                ex.AppendToLogFile();
+                this.ShowErrorMessage(true, "Autodetection failed. See error.log");
+            }
+
+        }
 
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
@@ -63,7 +90,8 @@ namespace HSModLoader.App
                 }
                 else
                 {
-                    this.TextBlockErrorMessage.Visibility = Visibility.Visible;
+                    this.TextBoxGameFolderPath.Text = string.Empty;
+                    this.ShowErrorMessage(true, "The selected folder cannot be accessed, does not contain Himeko Sutori, or is not a folder.");
                 }
             }
         }
@@ -74,5 +102,30 @@ namespace HSModLoader.App
             this.Close();
         }
 
+        private void ShowErrorMessage(bool visible, string message = "")
+        {
+            if(visible)
+            {
+                this.TextBlockErrorMessage.Text = message;
+                this.TextBlockErrorMessage.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.TextBlockErrorMessage.Visibility = Visibility.Collapsed;
+                this.TextBlockErrorMessage.Text = message;
+            }
+        }
+
+        private void OnTextBoxChanged(object sender, TextChangedEventArgs e)
+        {
+            if(string.IsNullOrEmpty(this.TextBoxGameFolderPath.Text))
+            {
+                this.ButtonAutodetectGameGolder.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.ButtonAutodetectGameGolder.Visibility = Visibility.Hidden;
+            }
+        }
     }
 }

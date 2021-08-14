@@ -44,14 +44,28 @@
             If you're not sure where it is, open Steam, right-click on Himeko Sutori in your game list, then choose Manage > Browse Local Files. Copy the path that you see.
         </TextBlock>
         
-        <TextBox x:Name="TextBoxGameFolderPath" Grid.Row="2" Height="20" Margin="4" Padding="4"></TextBox>
-        <TextBlock x:Name="TextBlockErrorMessage" Visibility="Collapsed" Grid.Row="3" VerticalAlignment="Bottom" Margin="4" Padding="4" TextWrapping="WrapWithOverflow" Foreground="Red">
-            The selected folder cannot be accessed, does not contain Himeko Sutori, or is not a folder.
-        </TextBlock>
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="ButtonSaveGameFolder" Click="OnSaveButtonClick" Margin="4" Padding="4">Save</Button>
-            <Button x:Name="ButtonCancelGameFolder" Visibility="Collapsed" Margin="4" Padding="4" Click="OnCancelButtonClick">Cancel</Button>
-        </StackPanel>
+        <TextBox x:Name="TextBoxGameFolderPath" TextChanged="OnTextBoxChanged" Grid.Row="2" Height="20" Margin="4" Padding="4"></TextBox>
+        <TextBlock x:Name="TextBlockErrorMessage" Visibility="Collapsed" Grid.Row="3" VerticalAlignment="Bottom" Margin="4" Padding="4" TextWrapping="WrapWithOverflow" Foreground="Red"/>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="ButtonAutodetectGameGolder" 
+                        Click="OnAutodetectButtonClick" 
+                        ToolTip="Tries to autodetect the Himeko Sutori game folder by checking with the local Steam install. This process is not guaranteed to succeed"
+                        Margin="4" 
+                        Padding="4">
+                    Autodetect this for me
+                </Button>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="ButtonSaveGameFolder" Click="OnSaveButtonClick" Margin="4" Padding="4">Save</Button>
+                <Button x:Name="ButtonCancelGameFolder" Visibility="Collapsed" Margin="4" Padding="4" Click="OnCancelButtonClick">Cancel</Button>
+            </StackPanel>
+        </Grid>
+        
 
     </Grid>
 </Window>
