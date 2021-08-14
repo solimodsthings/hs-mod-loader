@@ -145,12 +145,12 @@ namespace HSModLoader.App
             this.Refresh();
 
         }
+
         public void Refresh()
         {
             // Assumes all properties have changed
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         }
-
 
     }
 }

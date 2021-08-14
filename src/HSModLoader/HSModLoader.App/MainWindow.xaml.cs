@@ -243,6 +243,7 @@ namespace HSModLoader.App
             this.ShowOverlay(true);
             // TODO: show an in-progress animation
             this.Manager.ApplyMods();
+            this.Manager.SaveToFile();
             this.ShowOverlay(false);
         }
 

@@ -74,11 +74,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="LogFileExtensions.cs" />
-    <Compile Include="ModFileMapping.cs" />
     <Compile Include="ModView.cs" />
-    <Compile Include="Result.cs" />
-    <Compile Include="Validator.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">
       <DependentUpon>GameFolderWindow.xaml</DependentUpon>
     </Compile>
@@ -107,8 +103,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ModConfiguration.cs" />
-    <Compile Include="ModManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -126,6 +120,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="PostBuild.ps1" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -135,17 +130,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HSModLoader\HSModLoader.csproj">
-      <Project>{76d6bcd4-f6b6-44d3-816c-68af0d79a210}</Project>
-      <Name>HSModLoader</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.4</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -1522,5 +1508,14 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HSModLoader\HSModLoader.csproj">
+      <Project>{e21b1996-6502-429b-bd7b-a3542ac26526}</Project>
+      <Name>HSModLoader</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>powershell -ExecutionPolicy Unrestricted $(ProjectDir)PostBuild.ps1 -Target $(TargetDir)</PostBuildEvent>
+  </PropertyGroup>
 </Project>
