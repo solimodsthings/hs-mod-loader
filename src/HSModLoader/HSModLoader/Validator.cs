@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace HSModLoader.App
+namespace HSModLoader
 {
     // Not yet sure if this should just be a set of static methods or extension methods
     public class Validator
@@ -114,7 +115,7 @@ namespace HSModLoader.App
                     {
                         var contents = File.ReadAllText(modinfo);
 
-                        var mod = JsonConvert.DeserializeObject<Mod>(contents);
+                        var mod = JsonSerializer.Deserialize<Mod>(contents);
 
                         if(mod != null)
                         {

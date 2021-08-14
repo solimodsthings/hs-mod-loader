@@ -15,7 +15,6 @@ namespace HSModLoader
     {
         public string Name { get; set; }
         public List<GameConfigurationItem> Items { get; set; }
-
         public List<string> Comments { get; set; }
 
         public GameConfigurationSection()

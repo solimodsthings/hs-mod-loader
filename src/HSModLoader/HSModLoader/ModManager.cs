@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace HSModLoader.App
+namespace HSModLoader
 {
 
     public class ModManager
@@ -51,7 +52,7 @@ namespace HSModLoader.App
 
                 try
                 {
-                    var m = JsonConvert.DeserializeObject<ModManager>(json);
+                    var m = JsonSerializer.Deserialize<ModManager>(json);
 
                     this.ModConfigurations = m.ModConfigurations;
                     this.GameFolderPath = m.GameFolderPath;
@@ -63,7 +64,7 @@ namespace HSModLoader.App
                         if (File.Exists(modinfo))
                         {
                             var contents = File.ReadAllText(modinfo);
-                            configuration.Mod = JsonConvert.DeserializeObject<Mod>(contents);
+                            configuration.Mod = JsonSerializer.Deserialize<Mod>(contents);
                         }
                         else
                         {
@@ -82,7 +83,8 @@ namespace HSModLoader.App
 
         public void SaveToFile()
         {
-            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(this, options);
             File.WriteAllText(ConfigurationFile, json);
         }
 
@@ -118,7 +120,7 @@ namespace HSModLoader.App
                     if (File.Exists(modinfo))
                     {
                         var contents = File.ReadAllText(modinfo);
-                        var mod = JsonConvert.DeserializeObject<Mod>(contents);
+                        var mod = JsonSerializer.Deserialize<Mod>(contents);
 
                         if (!this.Exists(mod.Name, mod.Version))
                         {

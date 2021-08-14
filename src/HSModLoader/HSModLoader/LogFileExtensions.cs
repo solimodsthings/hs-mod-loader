@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HSModLoader.App
+namespace HSModLoader
 {
     /// <summary>
-    /// Used to send caught Exceptions to an error log file.
+    /// Used to send information to an error log file.
     /// </summary>
     public static class LogFileExtensions
     {

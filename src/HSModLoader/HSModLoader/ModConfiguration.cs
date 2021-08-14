@@ -1,12 +1,8 @@
-﻿using Newtonsoft.Json;
-using System.Reflection;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
-namespace HSModLoader.App
+namespace HSModLoader
 {
     /// <summary>
     /// The permitted states for a mod.
