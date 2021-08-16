@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -79,13 +81,24 @@ namespace HSModLoader.App
         /// <param name="show">True to show the overlay or false to turn it off.</param>
         private void ShowOverlay(bool show)
         {
-            if(show)
+            if (show)
             {
                 this.CanvasFadeOut.Visibility = Visibility.Visible;
             }
             else
             {
                 this.CanvasFadeOut.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void ShowProgressOverlay(bool show)
+        {
+            if (show)
+            {
+                this.ProgressRing.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.ProgressRing.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -138,6 +151,7 @@ namespace HSModLoader.App
             }
             else
             {
+                this.SelectedMod.Set(new ModConfiguration());
                 this.InfoPanel.IsEnabled = false;
             }
         }
@@ -241,23 +255,60 @@ namespace HSModLoader.App
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
             this.ShowOverlay(true);
-            this.Manager.SaveToFile();
+            this.ShowProgressOverlay(true);
 
-            // TODO: show an in-progress animation
+            var worker = new BackgroundWorker();
+            worker.DoWork += ApplyMods;
+            worker.RunWorkerCompleted += delegate (object s, RunWorkerCompletedEventArgs args)
+            {
+                Dispatcher.Invoke(() => {
+                    this.ShowOverlay(false);
+                    this.ShowProgressOverlay(false);
+                });
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void ApplyMods(object sender, DoWorkEventArgs e)
+        {
+            var start = DateTime.Now;
+
+            this.Manager.SaveToFile();
             var result = this.Manager.ApplyMods();
 
-            if(!result.IsSuccessful)
+            if (!result.IsSuccessful)
             {
-                this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
+                Dispatcher.Invoke(() =>
+                {
+                    this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
+                    this.Manager.SaveToFile();
+                    this.RebuildModViews();
+                    this.SelectedMod.Refresh();
+                });
             }
+            else
+            {
+                // This gives user some visual feedback that something actually happened
+                // if applying mods occurred too quickly to show a loading animation
+                var duration = (DateTime.Now - start).TotalSeconds;
+                if (duration < 1.5)
+                {
+                    Thread.Sleep((int)(1.5 * 1000) - (int)(duration * 1000));
+                }
+            }
+        }
 
-            this.ShowOverlay(false);
+
+        private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
+        {
+            Process.Start(System.IO.Path.Combine(this.Manager.GameFolderPath, ModManager.GameExecutable64Bit));
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.Save();
         }
+
 
     }
 }
