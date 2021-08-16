@@ -241,9 +241,16 @@ namespace HSModLoader.App
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
             this.ShowOverlay(true);
-            // TODO: show an in-progress animation
-            this.Manager.ApplyMods();
             this.Manager.SaveToFile();
+
+            // TODO: show an in-progress animation
+            var result = this.Manager.ApplyMods();
+
+            if(!result.IsSuccessful)
+            {
+                this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
+            }
+
             this.ShowOverlay(false);
         }
 

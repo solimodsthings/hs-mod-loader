@@ -266,97 +266,210 @@ namespace HSModLoader
         /// state (ie. enabled, soft disabled, or disabled). The method does not modify existing base
         /// game files except for RPGTacMods.ini which is necessary for any mod that has a mutator class.
         /// </summary>
-        public void ApplyMods()
+        public Result ApplyMods()
         {
-            var mutatorsConfig = new GameConfiguration(Path.Combine(this.GameFolderPath, ConfigFolder, "RPGTacMods.ini"));
+
+            var result = new Result();
 
             try
             {
-                mutatorsConfig.Load();
+                this.ApplyModsToMutatorIniFile();
+                var apply = this.ApplyModsToGameFolder();
 
-                // This list of all available mutator classes will be used to preserve unmanaged
-                // mods the player may have added manually
-                var allAvailableMutators = this.ModConfigurations
-                    .Select(x => x.Mod)
-                    .Where(x => x.HasMutator && !string.IsNullOrEmpty(x.MutatorStartClass))
-                    .Select(x => x.MutatorStartClass);
-
-                // First we find out what exactly is enabled now
-                var enabledMutatorClasses = new List<string>();
-
-                foreach (var config in this.ModConfigurations)
+                if(!apply.IsSuccessful)
                 {
-                    if (config.State == ModState.Enabled)
-                    {
-                        if(config.Mod.HasMutator && !string.IsNullOrEmpty(config.Mod.MutatorStartClass))
-                        {
-                            enabledMutatorClasses.Add(config.Mod.MutatorStartClass);
-                        }
-                    }
-                }
-
-                // Begin manipulating the .ini file. This is built to work even if new config sections or
-                // items are added to the .ini file.
-                var newMutatorList = string.Join(",", enabledMutatorClasses);
-
-                var configSection = mutatorsConfig.Sections.Where(x => x.Name == MutatorLoaderSection).FirstOrDefault();
-
-                if (configSection == null)
-                {
-                    mutatorsConfig.Sections.Add(new GameConfigurationSection() { Name = MutatorLoaderSection });
-                }
-
-                var configItem = configSection.Items.Where(x => x.Key == MutatorLoaderItem).FirstOrDefault();
-
-                if (configItem == null)
-                {
-                    configSection.Items.Add(new GameConfigurationItem() { Key = MutatorLoaderItem, Value = newMutatorList });
+                    result.ErrorMessage += apply.ErrorMessage;
                 }
                 else
                 {
-
-                    // Attempt to preserve any mutator classes that were manually added
-                    // by player to .ini file if they are not already managed by this mod loader
-                    var unmanagedMutatorClasses = new List<string>();
-
-                    if (allAvailableMutators != null)
-                    {
-                        var existingMutatorList = configItem.Value;
-                        var existingMutatorClasses = existingMutatorList.Split(',').ToList();
-
-                        foreach (var existingClass in existingMutatorClasses)
-                        {
-                            if (!string.IsNullOrEmpty(existingClass) && !allAvailableMutators.Contains(existingClass))
-                            {
-                                unmanagedMutatorClasses.Add(existingClass);
-                            }
-                        }
-                    }
-
-                    // Finally, update the mutator list
-                    if (unmanagedMutatorClasses.Count > 0)
-                    {
-                        if(enabledMutatorClasses.Count > 0)
-                        {
-                            newMutatorList += ",";
-                        }
-
-                        newMutatorList += string.Join(",", unmanagedMutatorClasses);
-                    }
-
-                    configItem.Value = newMutatorList;
+                    result.IsSuccessful = true;
                 }
                 
-
-                mutatorsConfig.Save();
-
             }
             catch(Exception e)
             {
                 e.AppendToLogFile();
+                result.ErrorMessage = "Encountered an error while trying to update mod/game files. See error.log.";
             }
+
+            return result;
         }
 
+        public void ApplyModsToMutatorIniFile()
+        {
+            var mutatorsConfig = new GameConfiguration(Path.Combine(this.GameFolderPath, ConfigFolder, "RPGTacMods.ini"));
+            mutatorsConfig.Load();
+
+            // This list of all available mutator classes will be used to preserve unmanaged
+            // mods the player may have added manually
+            var allAvailableMutators = this.ModConfigurations
+                .Select(x => x.Mod)
+                .Where(x => x.HasMutator && !string.IsNullOrEmpty(x.MutatorStartClass))
+                .Select(x => x.MutatorStartClass);
+
+            // First we find out what exactly is enabled now
+            var enabledMutatorClasses = new List<string>();
+
+            foreach (var config in this.ModConfigurations)
+            {
+                if (config.State == ModState.Enabled)
+                {
+                    if (config.Mod.HasMutator && !string.IsNullOrEmpty(config.Mod.MutatorStartClass))
+                    {
+                        enabledMutatorClasses.Add(config.Mod.MutatorStartClass);
+                    }
+                }
+            }
+
+            // Begin manipulating the .ini file. This is built to work even if new config sections or
+            // items are added to the .ini file.
+            var newMutatorList = string.Join(",", enabledMutatorClasses);
+
+            var configSection = mutatorsConfig.Sections.Where(x => x.Name == MutatorLoaderSection).FirstOrDefault();
+
+            if (configSection == null)
+            {
+                mutatorsConfig.Sections.Add(new GameConfigurationSection() { Name = MutatorLoaderSection });
+            }
+
+            var configItem = configSection.Items.Where(x => x.Key == MutatorLoaderItem).FirstOrDefault();
+
+            if (configItem == null)
+            {
+                configSection.Items.Add(new GameConfigurationItem() { Key = MutatorLoaderItem, Value = newMutatorList });
+            }
+            else
+            {
+
+                // Attempt to preserve any mutator classes that were manually added
+                // by player to .ini file if they are not already managed by this mod loader
+                var unmanagedMutatorClasses = new List<string>();
+
+                if (allAvailableMutators != null)
+                {
+                    var existingMutatorList = configItem.Value;
+                    var existingMutatorClasses = existingMutatorList.Split(',').ToList();
+
+                    foreach (var existingClass in existingMutatorClasses)
+                    {
+                        if (!string.IsNullOrEmpty(existingClass) && !allAvailableMutators.Contains(existingClass))
+                        {
+                            unmanagedMutatorClasses.Add(existingClass);
+                        }
+                    }
+                }
+
+                // Finally, update the mutator list
+                if (unmanagedMutatorClasses.Count > 0)
+                {
+                    if (enabledMutatorClasses.Count > 0)
+                    {
+                        newMutatorList += ",";
+                    }
+
+                    newMutatorList += string.Join(",", unmanagedMutatorClasses);
+                }
+
+                configItem.Value = newMutatorList;
+            }
+
+
+            mutatorsConfig.Save();
+        }
+
+        public Result ApplyModsToGameFolder()
+        {
+            var result = new Result() { IsSuccessful = true };
+
+            foreach (var configuration in this.ModConfigurations)
+            {
+                if (configuration.State == ModState.Enabled)
+                {
+                    var install = this.Install(configuration);
+
+                    if(!install.IsSuccessful)
+                    {
+                        result.IsSuccessful = false;
+                        result.ErrorMessage += install.ErrorMessage;
+                        this.Uninstall(configuration);
+                        configuration.State = ModState.Disabled;
+                    }
+                }
+                else if (configuration.State == ModState.SoftDisabled)
+                {
+                    this.Uninstall(configuration);
+                    var install = this.Install(configuration, ModFileType.Content, ModFileType.Localization);
+
+                    if (!install.IsSuccessful)
+                    {
+                        result.IsSuccessful = false;
+                        result.ErrorMessage += install.ErrorMessage;
+                        this.Uninstall(configuration);
+                        configuration.State = ModState.Disabled;
+                    }
+                }
+                else if (configuration.State == ModState.Disabled)
+                {
+                    this.Uninstall(configuration);
+                }
+            }
+
+            return result;
+        }
+
+        private Result Install(ModConfiguration configuration)
+        {
+            var types = (ModFileType[])Enum.GetValues(typeof(ModFileType));
+            return this.Install(configuration, types);
+        }
+
+        private Result Install(ModConfiguration configuration, params ModFileType[] typesToInstall)
+        {
+
+            var result = new Result() { IsSuccessful = true };
+
+            foreach(var mapping in configuration.Mappings)
+            {
+                if(typesToInstall.Contains(mapping.Type))
+                {
+                    var source = Path.Combine(configuration.Path, mapping.SourceFile);
+
+                    if (File.Exists(source))
+                    {
+                        File.Copy(source, Path.Combine(this.GameFolderPath, mapping.DestinationFile));
+                    }
+                    else
+                    {
+                        result.IsSuccessful = false;
+                        LogFileExtensions.AppendToLogFile(string.Format(
+                            "File '{0} for mod '{1}' version {2} does not exist and cannot be installed into the game directory.", 
+                            source, 
+                            configuration.Mod.Name, 
+                            configuration.Mod.Version));
+                    }
+                }
+            }
+
+            if(!result.IsSuccessful)
+            {
+                result.ErrorMessage = string.Format("Could not install Mod '{0}' version {2} into the game. The mod has an issue with one or more files.");
+            }
+
+            return result;
+        }
+
+        private void Uninstall(ModConfiguration configuration)
+        {
+            foreach(var mapping in configuration.Mappings)
+            {
+                var target = Path.Combine(this.GameFolderPath, mapping.DestinationFile);
+
+                if (File.Exists(target))
+                {
+                    File.Delete(target);
+                }
+            }
+        }
 
         /// <summary>
         /// Shifts a mod up the order list by one.
