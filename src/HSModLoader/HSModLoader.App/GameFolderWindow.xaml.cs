@@ -118,6 +118,7 @@ namespace HSModLoader.App
 
         private void OnTextBoxChanged(object sender, TextChangedEventArgs e)
         {
+            /*
             if(string.IsNullOrEmpty(this.TextBoxGameFolderPath.Text))
             {
                 this.ButtonAutodetectGameGolder.Visibility = Visibility.Visible;
@@ -126,6 +127,7 @@ namespace HSModLoader.App
             {
                 this.ButtonAutodetectGameGolder.Visibility = Visibility.Hidden;
             }
+            */
         }
     }
 }

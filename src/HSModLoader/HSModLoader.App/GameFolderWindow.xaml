@@ -41,7 +41,7 @@
             you know it, paste it into the text box below and hit save.
             <LineBreak/>
             <LineBreak/>
-            If you're not sure where it is, open Steam, right-click on Himeko Sutori in your game list, then choose Manage > Browse Local Files. Copy the path that you see.
+            If you're not sure where it is, you can try autodetecting the path by clicking the 'Autodetect Using Steam' button.
         </TextBlock>
         
         <TextBox x:Name="TextBoxGameFolderPath" TextChanged="OnTextBoxChanged" Grid.Row="2" Height="20" Margin="4" Padding="4"></TextBox>
@@ -57,7 +57,7 @@
                         ToolTip="Tries to autodetect the Himeko Sutori game folder by checking with the local Steam install. This process is not guaranteed to succeed"
                         Margin="4" 
                         Padding="4">
-                    Autodetect this for me
+                    Autodetect Using Steam
                 </Button>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
