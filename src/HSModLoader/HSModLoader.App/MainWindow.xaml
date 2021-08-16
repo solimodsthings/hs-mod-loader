@@ -10,6 +10,7 @@
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
         Title="Himeko Sutori Mod Manager" 
+        Icon="pack://application:,,,/HSModLoader.App;component/Resources/WindowIcon.ico"
         ContentRendered="OnWindowContentRendered"
         Closing="OnWindowClosing"
         Height="650" 
