@@ -75,6 +75,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GameFolderAutodetector.cs" />
+    <Compile Include="ConfirmationWindow.xaml.cs">
+      <DependentUpon>ConfirmationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ModView.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">
       <DependentUpon>GameFolderWindow.xaml</DependentUpon>
@@ -97,6 +100,10 @@
     <Page Include="GameFolderWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ConfirmationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="MessageWindow.xaml">
       <SubType>Designer</SubType>

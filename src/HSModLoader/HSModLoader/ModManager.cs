@@ -198,6 +198,27 @@ namespace HSModLoader
             return mappingResult;
         }
 
+        public Result UnregisterMod(ModConfiguration configuration)
+        {
+            var result = new Result();
+            try
+            {
+                this.Uninstall(configuration);
+                Directory.Delete(configuration.Path, true);
+                this.ModConfigurations.Remove(configuration);
+                this.UpdateModOrderValue();
+                result.IsSuccessful = true;
+            }
+            catch(Exception e)
+            {
+                e.AppendToLogFile();
+                result.ErrorMessage = "Mod was not uninstalled correctly. See error.log.";
+            }
+            
+
+            return result;
+        }
+
         private Result CreateFilesMappings(ModConfiguration configuration)
         {
             bool invalidLocalizationFile = false;

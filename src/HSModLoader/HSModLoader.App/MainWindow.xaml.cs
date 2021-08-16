@@ -239,6 +239,36 @@ namespace HSModLoader.App
             }
         }
 
+        private void OnRemoveMod(object sender, RoutedEventArgs e)
+        {
+            var selectedIndex = this.ListAvailableMods.SelectedIndex;
+
+            if(selectedIndex >= 0 && selectedIndex < this.Manager.ModConfigurations.Count)
+            {
+                this.ShowOverlay(true);
+                
+                var configuration = this.Manager.ModConfigurations[selectedIndex];
+                var mod = configuration.Mod;
+                var message = string.Format("Are you sure you want to uninstall and permanently remove mod '{0}' version {1}?", mod.Name, mod.Version);
+                
+                var confirmation = new ConfirmationWindow("Confirmation", message);
+                confirmation.Owner = this;
+
+                var result = confirmation.ShowDialog();
+
+                if(result == true)
+                {
+                    this.Manager.UnregisterMod(configuration);
+                    this.Manager.SaveToFile();
+                    this.RebuildModViews();
+                    this.ListAvailableMods.SelectedIndex = -1;
+                }
+
+                this.ShowOverlay(false);
+            }
+
+        }
+
         private void HandleRegistrationResult(Result result)
         {
             if (result.IsSuccessful)
@@ -258,7 +288,7 @@ namespace HSModLoader.App
             this.ShowProgressOverlay(true);
 
             var worker = new BackgroundWorker();
-            worker.DoWork += ApplyMods;
+            worker.DoWork += ApplyModsAsync;
             worker.RunWorkerCompleted += delegate (object s, RunWorkerCompletedEventArgs args)
             {
                 Dispatcher.Invoke(() => {
@@ -269,7 +299,7 @@ namespace HSModLoader.App
             worker.RunWorkerAsync();
         }
 
-        private void ApplyMods(object sender, DoWorkEventArgs e)
+        private void ApplyModsAsync(object sender, DoWorkEventArgs e)
         {
             var start = DateTime.Now;
 
@@ -291,9 +321,9 @@ namespace HSModLoader.App
                 // This gives user some visual feedback that something actually happened
                 // if applying mods occurred too quickly to show a loading animation
                 var duration = (DateTime.Now - start).TotalSeconds;
-                if (duration < 1.5)
+                if (duration < 0.5)
                 {
-                    Thread.Sleep((int)(1.5 * 1000) - (int)(duration * 1000));
+                    Thread.Sleep((int)(0.5 * 1000) - (int)(duration * 1000));
                 }
             }
         }

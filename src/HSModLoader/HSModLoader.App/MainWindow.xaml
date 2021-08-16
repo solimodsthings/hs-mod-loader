@@ -156,7 +156,7 @@
                         
                         <Button Click="OnMoveModOrderUp" Margin="0,4,0,4">Move Up</Button>
                         <Button Click="OnMoveModOrderDown"  Margin="0,4,0,4">Move Down</Button>
-                        <Button Margin="0,4,0,4">Remove</Button>
+                        <Button Click="OnRemoveMod" Margin="0,4,0,4">Remove</Button>
                         
                     </StackPanel>
                 </Grid>
