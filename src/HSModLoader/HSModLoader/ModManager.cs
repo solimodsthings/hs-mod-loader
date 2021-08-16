@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -29,19 +30,29 @@ namespace HSModLoader
         [JsonIgnore]
         public static readonly string ConfigFolder = @"RPGTacGame\Config";
         [JsonIgnore]
+        public static readonly string GameExecutable64Bit = @"Binaries\Win64\RPGTacGame.exe";
+        [JsonIgnore]
+        public static readonly string GameExecutable32Bit = @"Binaries\Win32\RPGTacGame.exe";
+        [JsonIgnore]
         public static readonly string MutatorLoaderSection = "rpgtacgame.RPGTacMutatorLoader";
         [JsonIgnore]
         public static readonly string MutatorLoaderItem = "MutatorsLoaded";
         [JsonIgnore]
         public static readonly string ManagedModPrefix = "managed-mod-";
+        [JsonIgnore]
+        public static readonly string ChangeLogFile = "filechanges.log";
+
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 
         public string GameFolderPath { get; set; }
 
+        private StringBuilder ChangeLog;
+
         public ModManager()
         {
             ModConfigurations = new List<ModConfiguration>();
+            ChangeLog = new StringBuilder();
         }
 
         public void LoadFromFile()
@@ -107,15 +118,14 @@ namespace HSModLoader
 
             if (File.Exists(filepath))
             {
-                // TODO: Think of a more usable folder path
-                var destination = Path.Combine(ModFolder, Path.GetRandomFileName());
+                var temporaryDestination = Path.Combine(ModFolder, Path.GetRandomFileName());
 
                 try
                 {
-                    Directory.CreateDirectory(destination);
-                    ZipFile.ExtractToDirectory(filepath, destination);
+                    Directory.CreateDirectory(temporaryDestination);
+                    ZipFile.ExtractToDirectory(filepath, temporaryDestination);
 
-                    var modinfo = destination + Path.DirectorySeparatorChar + ModInfoFile;
+                    var modinfo = temporaryDestination + Path.DirectorySeparatorChar + ModInfoFile;
 
                     if (File.Exists(modinfo))
                     {
@@ -124,7 +134,12 @@ namespace HSModLoader
 
                         if (!this.Exists(mod.Name, mod.Version))
                         {
-                            var mappingResult = this.RegisterMod(mod, destination);
+
+                            var trueDestination = Path.Combine(ModFolder, string.Format("{0}_{1}", mod.Name.Trim(), mod.Version.Trim()).Replace(" ", string.Empty));
+
+                            Directory.Move(temporaryDestination, trueDestination);
+
+                            var mappingResult = this.RegisterMod(mod, trueDestination);
 
                             if (mappingResult.IsSuccessful)
                             {
@@ -173,9 +188,9 @@ namespace HSModLoader
 
             var mappingResult = this.CreateFilesMappings(configuration);
 
-            // order matters for next two statements
             if (mappingResult.IsSuccessful)
             {
+                // order matters for next two statements
                 this.ModConfigurations.Add(configuration);
                 configuration.OrderIndex = this.ModConfigurations.Count - 1;
             }
@@ -270,15 +285,19 @@ namespace HSModLoader
         {
 
             var result = new Result();
+            this.ClearFileChangeLog();
+            this.LogFileChange("Beginning file changes...");
 
             try
             {
+                
                 this.ApplyModsToMutatorIniFile();
                 var apply = this.ApplyModsToGameFolder();
 
                 if(!apply.IsSuccessful)
                 {
                     result.ErrorMessage += apply.ErrorMessage;
+                    this.LogFileChange(result.ErrorMessage);
                 }
                 else
                 {
@@ -289,9 +308,12 @@ namespace HSModLoader
             catch(Exception e)
             {
                 e.AppendToLogFile();
-                result.ErrorMessage = "Encountered an error while trying to update mod/game files. See error.log.";
+                result.ErrorMessage = "Encountered an error while trying to update mod/game files.";
+                this.LogFileChange(result.ErrorMessage);
             }
 
+            this.LogFileChange("File changes finished.");
+            this.WriteFileChangeLogToDisk();
             return result;
         }
 
@@ -375,6 +397,7 @@ namespace HSModLoader
 
 
             mutatorsConfig.Save();
+            this.LogFileChange(string.Format("File updated: {0}", mutatorsConfig.FileName));
         }
 
         public Result ApplyModsToGameFolder()
@@ -425,6 +448,11 @@ namespace HSModLoader
 
         private Result Install(ModConfiguration configuration, params ModFileType[] typesToInstall)
         {
+            this.LogFileChange(string.Format("Adding files for mod {0}, for the following types:...", configuration.Mod.Name));
+            foreach(var type in typesToInstall)
+            {
+                this.LogFileChange(Enum.GetName(typeof(ModFileType), type));
+            }
 
             var result = new Result() { IsSuccessful = true };
 
@@ -436,7 +464,17 @@ namespace HSModLoader
 
                     if (File.Exists(source))
                     {
-                        File.Copy(source, Path.Combine(this.GameFolderPath, mapping.DestinationFile));
+                        var destination = Path.Combine(this.GameFolderPath, mapping.DestinationFile);
+                        if (!File.Exists(destination))
+                        {
+                            File.Copy(source, destination);
+                            this.LogFileChange(string.Format("File added: {0}", destination));
+                        }
+                        else
+                        {
+                            this.LogFileChange(string.Format("File confirmed to already exist: {0}", destination));
+                        }
+                        
                     }
                     else
                     {
@@ -446,13 +484,14 @@ namespace HSModLoader
                             source, 
                             configuration.Mod.Name, 
                             configuration.Mod.Version));
+                        this.LogFileChange(string.Format("File could not be added because the source does not exist: {0}", source));
                     }
                 }
             }
 
             if(!result.IsSuccessful)
             {
-                result.ErrorMessage = string.Format("Could not install Mod '{0}' version {2} into the game. The mod has an issue with one or more files.");
+                result.ErrorMessage = string.Format("Could not install Mod '{0}' version {1} into the game. The mod has an issue with one or more files.", configuration.Mod.Name, configuration.Mod.Version);
             }
 
             return result;
@@ -460,13 +499,19 @@ namespace HSModLoader
 
         private void Uninstall(ModConfiguration configuration)
         {
-            foreach(var mapping in configuration.Mappings)
+            this.LogFileChange(string.Format("Checking files that need to be removed for mod {0}...", configuration.Mod.Name));
+            foreach (var mapping in configuration.Mappings)
             {
                 var target = Path.Combine(this.GameFolderPath, mapping.DestinationFile);
 
                 if (File.Exists(target))
                 {
                     File.Delete(target);
+                    this.LogFileChange(string.Format("File removed: {0}", target));
+                }
+                else
+                {
+                    this.LogFileChange(string.Format("File confirmed to have already been removed: {0}", target));
                 }
             }
         }
@@ -511,6 +556,20 @@ namespace HSModLoader
             }
         }
 
+        private void ClearFileChangeLog()
+        {
+            this.ChangeLog.Clear();
+        }
+
+        private void LogFileChange(string message)
+        {
+            this.ChangeLog.AppendLine(string.Format("[{0}] {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), message));
+        }
+
+        private void WriteFileChangeLogToDisk()
+        {
+            File.WriteAllText(ChangeLogFile, this.ChangeLog.ToString());
+        }
 
     }
 }
