@@ -7,7 +7,7 @@ namespace HSModLoader.Console
 {
     public class Program
     {
-        private const string ModInfoFile = "mod/mod.json";
+        private const string ModInfoFile = "mod.json";
         private const string ModPackageExtension = ".hsmod";
         private const string ModWorkingFolder = "mod";
 
@@ -30,18 +30,23 @@ namespace HSModLoader.Console
             foreach (var mod in mods)
             {
                 var output = JsonSerializer.Serialize(mod, options);
-                File.WriteAllText(ModInfoFile, output);
+                File.WriteAllText(Path.Combine(ModWorkingFolder, ModInfoFile), output);
 
-                var filename = mod.Name.Replace(" ", string.Empty).Trim() + ModPackageExtension;
-
-                if (File.Exists(filename))
+                foreach(var file in mod.ModFiles)
                 {
-                    File.Delete(filename);
+                    File.WriteAllText(Path.Combine(ModWorkingFolder, file.Name), "debug file");
                 }
 
-                ZipFile.CreateFromDirectory(ModWorkingFolder, filename);
+                var package = mod.Name.Replace(" ", string.Empty).Trim() + ModPackageExtension;
 
-                System.Console.WriteLine(string.Format("Created test mod '{0}'", filename));
+                if (File.Exists(package))
+                {
+                    File.Delete(package);
+                }
+
+                ZipFile.CreateFromDirectory(ModWorkingFolder, package);
+
+                System.Console.WriteLine(string.Format("Created test mod '{0}'", package));
 
             }
 
@@ -52,7 +57,7 @@ namespace HSModLoader.Console
         {
             var mod = new Mod()
             {
-                Name = "No Files Test Mod",
+                Name = "Test Mod",
                 Version = "0.9.1",
                 Author = "Test Author",
                 HasCampaign = false,
@@ -65,6 +70,7 @@ namespace HSModLoader.Console
 
             return mod;
         }
+
         private static Mod InstantiateBrokenLocalizationMod()
         {
             var mod = new Mod()
