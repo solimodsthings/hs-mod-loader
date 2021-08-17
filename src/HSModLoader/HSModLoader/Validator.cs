@@ -138,31 +138,5 @@ namespace HSModLoader
 
             return result;
         }
-
-        public bool IsEnabledInMutatorLoader(GameConfiguration mutatorLoader, ModConfiguration configuration)
-        {
-
-            if(configuration.Mod.HasMutator)
-            {
-                if (!string.IsNullOrEmpty(configuration.Mod.MutatorStartClass))
-                {
-                    var mutatorsItem = mutatorLoader.Sections.SelectMany(x => x.Items).Where(y => y.Key == "MutatorsLoaded").FirstOrDefault();
-
-                    var mutators = mutatorsItem.Value.Split(',');
-
-                    foreach(var m in mutators)
-                    {
-                        if(m.Equals(configuration.Mod.MutatorStartClass))
-                        {
-                            return true;
-                        }
-                    }
-
-                }
-            }
-
-            return false;
-
-        }
     }
 }
