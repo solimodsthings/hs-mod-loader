@@ -27,8 +27,8 @@ namespace HSModLoader
     
         public Mod()
         {
-            ModFiles = new List<ModFile>();
-            Depedencies = new List<ModDependency>();
+            this.ModFiles = new List<ModFile>();
+            this.Depedencies = new List<ModDependency>();
         }
 
         public void AddScript(string name)

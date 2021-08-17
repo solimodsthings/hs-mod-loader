@@ -12,7 +12,7 @@ namespace HSModLoader
     /// </summary>
     public static class LogFileExtensions
     {
-        public static readonly string ErrorLog = "error.log";
+        private static readonly string ErrorLog = "error.log";
 
         public static void AppendToLogFile(this Exception e)
         {

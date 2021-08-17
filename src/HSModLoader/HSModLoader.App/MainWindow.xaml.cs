@@ -42,7 +42,7 @@ namespace HSModLoader.App
             }
 
             this.Manager = new ModManager();
-            this.Manager.LoadFromFile();
+            this.Manager.Load();
 
             this.ModViews = new ObservableCollection<ModView>();
             this.ListAvailableMods.ItemsSource = this.ModViews;
@@ -72,7 +72,7 @@ namespace HSModLoader.App
         // when data is being serialized to disk
         private void Save()
         {
-            this.Manager.SaveToFile();
+            this.Manager.Save();
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace HSModLoader.App
                 {
                     if (File.Exists(filepath) && v.IsModPackage(filepath))
                     {
-                        var result = this.Manager.RegisterModFromFile(filepath);
+                        var result = this.Manager.RegisterMod(filepath);
                         this.HandleRegistrationResult(result);
                     }
                 }
@@ -233,7 +233,7 @@ namespace HSModLoader.App
                 var v = new Validator();
                 if (File.Exists(browse.FileName) && v.IsModPackage(browse.FileName))
                 {
-                    var result = this.Manager.RegisterModFromFile(browse.FileName);
+                    var result = this.Manager.RegisterMod(browse.FileName);
                     this.HandleRegistrationResult(result);
                 }
             }
@@ -259,7 +259,7 @@ namespace HSModLoader.App
                 if(result == true)
                 {
                     this.Manager.UnregisterMod(configuration);
-                    this.Manager.SaveToFile();
+                    this.Manager.Save();
                     this.RebuildModViews();
                     this.ListAvailableMods.SelectedIndex = -1;
                 }
@@ -303,7 +303,7 @@ namespace HSModLoader.App
         {
             var start = DateTime.Now;
 
-            this.Manager.SaveToFile();
+            this.Manager.Save();
             var result = this.Manager.ApplyMods();
 
             if (!result.IsSuccessful)
@@ -311,7 +311,7 @@ namespace HSModLoader.App
                 Dispatcher.Invoke(() =>
                 {
                     this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
-                    this.Manager.SaveToFile();
+                    this.Manager.Save();
                     this.RebuildModViews();
                     this.SelectedMod.Refresh();
                 });
@@ -331,7 +331,7 @@ namespace HSModLoader.App
 
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
         {
-            Process.Start(System.IO.Path.Combine(this.Manager.GameFolderPath, ModManager.GameExecutable64Bit));
+            Process.Start(this.Manager.GetPathToGameExecutable());
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)

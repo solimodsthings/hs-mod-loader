@@ -2,12 +2,6 @@
 
 namespace HSModLoader
 {
-    public enum ModFileType
-    {
-        Script,
-        Content,
-        Localization
-    }
 
     /// <summary>
     /// An instance of this class represents a single script, 

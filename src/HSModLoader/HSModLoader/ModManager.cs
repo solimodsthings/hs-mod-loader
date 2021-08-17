@@ -15,33 +15,20 @@ namespace HSModLoader
 
     public class ModManager
     {
-        [JsonIgnore]
-        public static readonly string ConfigurationFile = "config.json";
-        [JsonIgnore]
-        public static readonly string ModInfoFile = "mod.json";
-        [JsonIgnore]
-        public static readonly string ModFolder = "mods";
-        [JsonIgnore]
-        public static readonly string ScriptsFolder = @"RPGTacGame\Script";
-        [JsonIgnore]
-        public static readonly string ContentFolder = @"RPGTacGame\Content";
-        [JsonIgnore]
-        public static readonly string LocalizationFolder = @"RPGTacGame\Localization";
-        [JsonIgnore]
-        public static readonly string ConfigFolder = @"RPGTacGame\Config";
-        [JsonIgnore]
-        public static readonly string GameExecutable64Bit = @"Binaries\Win64\RPGTacGame.exe";
-        [JsonIgnore]
-        public static readonly string GameExecutable32Bit = @"Binaries\Win32\RPGTacGame.exe";
-        [JsonIgnore]
-        public static readonly string MutatorLoaderSection = "rpgtacgame.RPGTacMutatorLoader";
-        [JsonIgnore]
-        public static readonly string MutatorLoaderItem = "MutatorsLoaded";
-        [JsonIgnore]
-        public static readonly string ManagedModPrefix = "managed-mod-";
-        [JsonIgnore]
-        public static readonly string ChangeLogFile = "filechanges.log";
+        private static readonly string ConfigurationFile = "config.json";
+        private static readonly string ModFolder = "mods";
+        private static readonly string ScriptsFolder = @"RPGTacGame\Script";
+        private static readonly string ContentFolder = @"RPGTacGame\Content";
+        private static readonly string LocalizationFolder = @"RPGTacGame\Localization";
+        private static readonly string ConfigFolder = @"RPGTacGame\Config";
+        private static readonly string GameExecutable64Bit = @"Binaries\Win64\RPGTacGame.exe";
+        private static readonly string GameExecutable32Bit = @"Binaries\Win32\RPGTacGame.exe";
+        private static readonly string MutatorLoaderSection = "rpgtacgame.RPGTacMutatorLoader";
+        private static readonly string MutatorLoaderItem = "MutatorsLoaded";
+        private static readonly string ManagedModPrefix = "managed-mod-";
+        private static readonly string ChangeLogFile = "filechanges.log";
 
+        public static readonly string ModInfoFile = "mod.json";
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 
@@ -55,7 +42,10 @@ namespace HSModLoader
             ChangeLog = new StringBuilder();
         }
 
-        public void LoadFromFile()
+        /// <summary>
+        /// Deserializes this ModManager from disk.
+        /// </summary>
+        public void Load()
         {
             if (File.Exists(ConfigurationFile))
             {
@@ -92,27 +82,21 @@ namespace HSModLoader
             }
         }
 
-        public void SaveToFile()
+        /// <summary>
+        /// Serializes this ModManager and current ModConfigurations to disk.
+        /// </summary>
+        public void Save()
         {
             var options = new JsonSerializerOptions { WriteIndented = true };
             var json = JsonSerializer.Serialize(this, options);
             File.WriteAllText(ConfigurationFile, json);
         }
 
-        private bool Exists(string modname, string version)
-        {
-            foreach(var mod in ModConfigurations.Select(x => x.Mod))
-            {
-                if(mod.Name.Equals(modname) && mod.Version.Equals(version))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public Result RegisterModFromFile(string filepath)
+        /// <summary>
+        /// Registers the mod package file at the specified file path
+        /// with this mod manager.
+        /// </summary>
+        public Result RegisterMod(string filepath)
         {
             var result = new Result() { IsSuccessful = false };
 
@@ -132,14 +116,14 @@ namespace HSModLoader
                         var contents = File.ReadAllText(modinfo);
                         var mod = JsonSerializer.Deserialize<Mod>(contents);
 
-                        if (!this.Exists(mod.Name, mod.Version))
+                        if (!this.IsRegistered(mod.Name, mod.Version))
                         {
 
                             var trueDestination = Path.Combine(ModFolder, string.Format("{0}_{1}", mod.Name.Trim(), mod.Version.Trim()).Replace(" ", string.Empty));
 
                             Directory.Move(temporaryDestination, trueDestination);
 
-                            var mappingResult = this.RegisterMod(mod, trueDestination);
+                            var mappingResult = this.AddModConfiguration(mod, trueDestination);
 
                             if (mappingResult.IsSuccessful)
                             {
@@ -178,7 +162,7 @@ namespace HSModLoader
 
         }
 
-        private Result RegisterMod(Mod mod, string repository)
+        private Result AddModConfiguration(Mod mod, string repository)
         {
             var configuration = new ModConfiguration();
 
@@ -186,7 +170,7 @@ namespace HSModLoader
             configuration.Path = repository;
             configuration.State = ModState.Disabled;
 
-            var mappingResult = this.CreateFilesMappings(configuration);
+            var mappingResult = this.CreateModFileMappings(configuration);
 
             if (mappingResult.IsSuccessful)
             {
@@ -198,28 +182,7 @@ namespace HSModLoader
             return mappingResult;
         }
 
-        public Result UnregisterMod(ModConfiguration configuration)
-        {
-            var result = new Result();
-            try
-            {
-                this.Uninstall(configuration);
-                Directory.Delete(configuration.Path, true);
-                this.ModConfigurations.Remove(configuration);
-                this.UpdateModOrderValue();
-                result.IsSuccessful = true;
-            }
-            catch(Exception e)
-            {
-                e.AppendToLogFile();
-                result.ErrorMessage = "Mod was not uninstalled correctly. See error.log.";
-            }
-            
-
-            return result;
-        }
-
-        private Result CreateFilesMappings(ModConfiguration configuration)
+        private Result CreateModFileMappings(ModConfiguration configuration)
         {
             bool invalidLocalizationFile = false;
             bool invalidFileType = false;
@@ -295,8 +258,46 @@ namespace HSModLoader
             return result;
 
         }
+        
+        private bool IsRegistered(string modname, string version)
+        {
+            foreach (var mod in ModConfigurations.Select(x => x.Mod))
+            {
+                if (mod.Name.Equals(modname) && mod.Version.Equals(version))
+                {
+                    return true;
+                }
+            }
 
- 
+            return false;
+        }
+
+        /// <summary>
+        /// Unregisters the specified mod configuration from this mod manager.
+        /// This method will automatically uninstall the mod if it is currently
+        /// in an enabled state.
+        /// </summary>
+        public Result UnregisterMod(ModConfiguration configuration)
+        {
+            var result = new Result();
+            try
+            {
+                this.UninstallModFiles(configuration);
+                Directory.Delete(configuration.Path, true);
+                this.ModConfigurations.Remove(configuration);
+                this.UpdateModOrderValue();
+                result.IsSuccessful = true;
+            }
+            catch (Exception e)
+            {
+                e.AppendToLogFile();
+                result.ErrorMessage = "Mod was not uninstalled correctly. See error.log.";
+            }
+
+
+            return result;
+        }
+
         /// <summary>
         /// Updates the game folder by adding or removing mod files based on the respective mod's
         /// state (ie. enabled, soft disabled, or disabled). The method does not modify existing base
@@ -306,8 +307,8 @@ namespace HSModLoader
         {
 
             var result = new Result();
-            this.ClearFileChangeLog();
-            this.LogFileChange("Beginning file changes...");
+            this.StartChangeLog();
+            this.AppendChangeLog("Beginning file changes...");
 
             try
             {
@@ -318,7 +319,7 @@ namespace HSModLoader
                 if(!apply.IsSuccessful)
                 {
                     result.ErrorMessage += apply.ErrorMessage;
-                    this.LogFileChange(result.ErrorMessage);
+                    this.AppendChangeLog(result.ErrorMessage);
                 }
                 else
                 {
@@ -330,15 +331,15 @@ namespace HSModLoader
             {
                 e.AppendToLogFile();
                 result.ErrorMessage = "Encountered an error while trying to update mod/game files.";
-                this.LogFileChange(result.ErrorMessage);
+                this.AppendChangeLog(result.ErrorMessage);
             }
 
-            this.LogFileChange("File changes finished.");
-            this.WriteFileChangeLogToDisk();
+            this.AppendChangeLog("File changes finished.");
+            this.EndChangeLog();
             return result;
         }
 
-        public void ApplyModsToMutatorIniFile()
+        private void ApplyModsToMutatorIniFile()
         {
             var mutatorsConfig = new GameConfiguration(Path.Combine(this.GameFolderPath, ConfigFolder, "RPGTacMods.ini"));
             mutatorsConfig.Load();
@@ -418,10 +419,10 @@ namespace HSModLoader
 
 
             mutatorsConfig.Save();
-            this.LogFileChange(string.Format("File updated: {0}", mutatorsConfig.FileName));
+            this.AppendChangeLog(string.Format("File updated: {0}", mutatorsConfig.FileName));
         }
 
-        public Result ApplyModsToGameFolder()
+        private Result ApplyModsToGameFolder()
         {
             var result = new Result() { IsSuccessful = true };
 
@@ -429,50 +430,50 @@ namespace HSModLoader
             {
                 if (configuration.State == ModState.Enabled)
                 {
-                    var install = this.Install(configuration);
+                    var install = this.InstallModFiles(configuration);
 
                     if(!install.IsSuccessful)
                     {
                         result.IsSuccessful = false;
                         result.ErrorMessage += install.ErrorMessage;
-                        this.Uninstall(configuration);
+                        this.UninstallModFiles(configuration); // in case some files managed to be added
                         configuration.State = ModState.Disabled;
                     }
                 }
                 else if (configuration.State == ModState.SoftDisabled)
                 {
-                    this.Uninstall(configuration);
-                    var install = this.Install(configuration, ModFileType.Content, ModFileType.Localization);
+                    this.UninstallModFiles(configuration);
+                    var install = this.InstallModFiles(configuration, ModFileType.Content, ModFileType.Localization);
 
                     if (!install.IsSuccessful)
                     {
                         result.IsSuccessful = false;
                         result.ErrorMessage += install.ErrorMessage;
-                        this.Uninstall(configuration);
+                        this.UninstallModFiles(configuration);
                         configuration.State = ModState.Disabled;
                     }
                 }
                 else if (configuration.State == ModState.Disabled)
                 {
-                    this.Uninstall(configuration);
+                    this.UninstallModFiles(configuration);
                 }
             }
 
             return result;
         }
 
-        private Result Install(ModConfiguration configuration)
+        private Result InstallModFiles(ModConfiguration configuration)
         {
             var types = (ModFileType[])Enum.GetValues(typeof(ModFileType));
-            return this.Install(configuration, types);
+            return this.InstallModFiles(configuration, types);
         }
 
-        private Result Install(ModConfiguration configuration, params ModFileType[] typesToInstall)
+        private Result InstallModFiles(ModConfiguration configuration, params ModFileType[] typesToInstall)
         {
-            this.LogFileChange(string.Format("Adding files for mod {0}, for the following types:...", configuration.Mod.Name));
+            this.AppendChangeLog(string.Format("Adding files for mod {0}, for the following types:...", configuration.Mod.Name));
             foreach(var type in typesToInstall)
             {
-                this.LogFileChange(Enum.GetName(typeof(ModFileType), type));
+                this.AppendChangeLog(Enum.GetName(typeof(ModFileType), type));
             }
 
             var result = new Result() { IsSuccessful = true };
@@ -489,11 +490,11 @@ namespace HSModLoader
                         if (!File.Exists(destination))
                         {
                             File.Copy(source, destination);
-                            this.LogFileChange(string.Format("File added: {0}", destination));
+                            this.AppendChangeLog(string.Format("File added: {0}", destination));
                         }
                         else
                         {
-                            this.LogFileChange(string.Format("File confirmed to already exist: {0}", destination));
+                            this.AppendChangeLog(string.Format("File confirmed to already exist: {0}", destination));
                         }
                         
                     }
@@ -505,7 +506,7 @@ namespace HSModLoader
                             source, 
                             configuration.Mod.Name, 
                             configuration.Mod.Version));
-                        this.LogFileChange(string.Format("File could not be added because the source does not exist: {0}", source));
+                        this.AppendChangeLog(string.Format("File could not be added because the source does not exist: {0}", source));
                     }
                 }
             }
@@ -518,9 +519,9 @@ namespace HSModLoader
             return result;
         }
 
-        private void Uninstall(ModConfiguration configuration)
+        private void UninstallModFiles(ModConfiguration configuration)
         {
-            this.LogFileChange(string.Format("Checking files that need to be removed for mod {0}...", configuration.Mod.Name));
+            this.AppendChangeLog(string.Format("Checking files that need to be removed for mod {0}...", configuration.Mod.Name));
             foreach (var mapping in configuration.Mappings)
             {
                 var target = Path.Combine(this.GameFolderPath, mapping.DestinationFile);
@@ -528,11 +529,11 @@ namespace HSModLoader
                 if (File.Exists(target))
                 {
                     File.Delete(target);
-                    this.LogFileChange(string.Format("File removed: {0}", target));
+                    this.AppendChangeLog(string.Format("File removed: {0}", target));
                 }
                 else
                 {
-                    this.LogFileChange(string.Format("File confirmed to have already been removed: {0}", target));
+                    this.AppendChangeLog(string.Format("File confirmed to have already been removed: {0}", target));
                 }
             }
         }
@@ -577,20 +578,51 @@ namespace HSModLoader
             }
         }
 
-        private void ClearFileChangeLog()
+        /// <summary>
+        /// Clears the file change log. Subsequent calls to AppendChangeLog() wil be 
+        /// written to disk once EndChangeLog() is called.
+        /// </summary>
+        private void StartChangeLog()
         {
             this.ChangeLog.Clear();
         }
 
-        private void LogFileChange(string message)
+        /// <summary>
+        /// Used to record file changes in the game folder.
+        /// </summary>
+        private void AppendChangeLog(string message)
         {
             this.ChangeLog.AppendLine(string.Format("[{0}] {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), message));
         }
 
-        private void WriteFileChangeLogToDisk()
+        /// <summary>
+        /// Writes recent changes to filechange.log.
+        /// </summary>
+        private void EndChangeLog()
         {
             File.WriteAllText(ChangeLogFile, this.ChangeLog.ToString());
         }
 
+        /// <summary>
+        /// Returns the path to the game's executable.
+        /// </summary>
+        public string GetPathToGameExecutable(bool Use64Bit = true)
+        {
+            if (!string.IsNullOrEmpty(this.GameFolderPath))
+            {
+                if (Use64Bit)
+                {
+                    return Path.Combine(this.GameFolderPath, GameExecutable64Bit);
+                }
+                else
+                {
+                    return Path.Combine(this.GameFolderPath, GameExecutable32Bit);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot provide a path to the game executable because the game golder path has not yet been set.");
+            }
+        }
     }
 }
