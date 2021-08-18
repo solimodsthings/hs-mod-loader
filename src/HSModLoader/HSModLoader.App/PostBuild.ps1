@@ -27,3 +27,23 @@ ls "$Target\*-*" | % {
     }
 
 }
+
+<#
+if(test-path "$Target\HSModLoader.App.exe"){
+    
+    if(test-path "$Target\HSModLoader.exe"){
+        rm "$Target\HSModLoader.exe"
+    }
+
+    mv "$Target\HSModLoader.App.exe" "$Target\HSModLoader.exe"
+}
+
+if(test-path "$Target\HSModLoader.App.exe.config"){
+
+    if(test-path "$Target\HSModLoader.exe.config"){
+        rm "$Target\HSModLoader.exe.config"
+    }
+
+    mv "$Target\HSModLoader.App.exe.config" "$Target\HSModLoader.exe.config"
+}
+#>

@@ -21,18 +21,11 @@ namespace HSModLoader
         /// This is also the location of the mod.json file for
         /// this mod.
         /// </summary>
-        public string Path { get; set; }
-
+        public string LocalPackageFile { get; set; }
+        public string LocalInfoFile { get; set; }
+        public string DestinationGamePath { get; set; }
         public ModState State { get; set; }
-
         public int OrderIndex { get; set; }
-
-        public List<ModFileMapping> Mappings { get; set; }
-
-        public ModConfiguration()
-        {
-            this.Mappings = new List<ModFileMapping>();
-        }
 
     }
 }

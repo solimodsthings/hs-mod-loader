@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace HSModLoader
 {
     // Not yet sure if this should just be a set of static methods or extension methods
+    // Or whether it should not be part of the core library
     public class Validator
     {
         /// <summary>

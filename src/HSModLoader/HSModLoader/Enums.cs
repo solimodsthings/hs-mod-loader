@@ -17,18 +17,4 @@ namespace HSModLoader
         Enabled
     }
 
-    /// <summary>
-    /// The supported file types of this mod loader.
-    /// 
-    /// <para><b>Script</b>: .u files created from compiled Unrealscript</para>
-    /// <para><b>Content</b>: .upk files created from the game's campaign editor</para>
-    /// <para><b>Localization</b>: UDK localization files (file extension changes depending on the language being supported)</para>
-    /// 
-    /// </summary>
-    public enum ModFileType
-    {
-        Script,
-        Content,
-        Localization
-    }
 }

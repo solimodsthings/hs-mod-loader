@@ -118,8 +118,9 @@ namespace HSModLoader.App
             {
                 this.Close();
             }
-            else
+            else if (result == true && !string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
+                this.Manager.InitializeGameModsFolder();
                 this.Save();
             }
 
