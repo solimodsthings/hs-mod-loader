@@ -38,6 +38,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+ 
         <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" x:Name="AppTitleBar" Background="{DynamicResource SystemControlBackgroundAccentBrush}" Height="32" ui:ThemeManager.RequestedTheme="Light" >
 
             <Grid.ColumnDefinitions>
@@ -73,8 +74,9 @@
                     AllowDrop="True"
                     Drop="OnAddNewModByDragDrop"
                     SelectionChanged="OnSelectedModChanged"
+                    ContextMenuOpening="OnRightClickMenuOpening"
                     VirtualizingPanel.VirtualizationMode="Recycling">
-                    
+
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding Order}" Header="Order" Width="75" />
@@ -83,6 +85,15 @@
                             <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="150"/>
                         </GridView>
                     </ListView.View>
+
+                    <ListView.ContextMenu>
+                        <ContextMenu x:Name="ContextMenuRightClick">
+                            <MenuItem x:Name="MenuItemEnableMod" Click="OnMenuItemEnableMod" Header="Enable"></MenuItem>
+                            <MenuItem x:Name="MenuItemSoftDisableMod" Click="OnMenuItemSoftDisableMod" Header="Soft Disable"></MenuItem>
+                            <MenuItem x:Name="MenuItemDisableMod" Click="OnMenuItemDisableMod" Header="Disable"></MenuItem>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+
                 </ListView>
             </GroupBox>
 

@@ -13,13 +13,13 @@ namespace HSModLoader.App
     /// </summary>
     public class ModView : INotifyPropertyChanged
     {
-        private ModConfiguration _configuration;
+        public ModConfiguration Configuration { get; private set; }
 
         public int Order
         {
             get
             {
-                return _configuration.OrderIndex + 1;
+                return Configuration.OrderIndex + 1;
             }
         }
 
@@ -27,7 +27,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.Mod?.Name ?? string.Empty;
+                return Configuration.Mod?.Name ?? string.Empty;
             }
         }
 
@@ -50,7 +50,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.Mod?.Version ?? string.Empty;
+                return Configuration.Mod?.Version ?? string.Empty;
             }
         }
 
@@ -58,7 +58,7 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.Mod?.Author ?? string.Empty;
+                return Configuration.Mod?.Author ?? string.Empty;
             }
         }
 
@@ -66,12 +66,12 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.State == ModState.Enabled;
+                return Configuration.State == ModState.Enabled;
             }
             set {
                 if (value)
                 {
-                    _configuration.State = ModState.Enabled;
+                    Configuration.State = ModState.Enabled;
                     this.Refresh();
                 }
             }
@@ -81,13 +81,13 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.State == ModState.Disabled;
+                return Configuration.State == ModState.Disabled;
             }
             set
             {
                 if (value)
                 {
-                    _configuration.State = ModState.Disabled;
+                    Configuration.State = ModState.Disabled;
                     this.Refresh();
                 }
             }
@@ -97,13 +97,13 @@ namespace HSModLoader.App
         {
             get
             {
-                return _configuration.State == ModState.SoftDisabled;
+                return Configuration.State == ModState.SoftDisabled;
             }
             set
             {
                 if (value)
                 {
-                    _configuration.State = ModState.SoftDisabled;
+                    Configuration.State = ModState.SoftDisabled;
                     this.Refresh();
                 }
             }
@@ -113,15 +113,15 @@ namespace HSModLoader.App
         {
             get
             {
-                if(_configuration.State == ModState.Enabled)
+                if(Configuration.State == ModState.Enabled)
                 {
                     return "Enabled";
                 }
-                else if(_configuration.State == ModState.Disabled)
+                else if(Configuration.State == ModState.Disabled)
                 {
                     return "Disabled";
                 }
-                else if (_configuration.State == ModState.SoftDisabled)
+                else if (Configuration.State == ModState.SoftDisabled)
                 {
                     return "Soft-Disabled";
                 }
@@ -136,12 +136,12 @@ namespace HSModLoader.App
 
         public ModView(ModConfiguration configuration) 
         {
-            this._configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public void Set(ModConfiguration configuration)
         {
-            this._configuration = configuration;
+            this.Configuration = configuration;
             this.Refresh();
 
         }

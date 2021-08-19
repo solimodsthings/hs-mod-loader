@@ -31,10 +31,12 @@ namespace HSModLoader.App
 
         public ObservableCollection<ModView> ModViews { get; set; }
         public ModView SelectedMod { get; set; }
-        
+
+
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            this.InitializeContextMenuComponent();
 
             if (!Directory.Exists("mods"))
             {
@@ -57,6 +59,24 @@ namespace HSModLoader.App
                 this.ListAvailableMods.SelectedIndex = 0;
             }
 
+        }
+
+        // The context menu for the main ListView is declared in XAML.
+        // This method makes it so the context menu only appears if a ListViewItem
+        // is right-licked, not anywhere in the ListView (including empty space).
+        // If this can all be moved to XAML in the future, it should.
+        private void InitializeContextMenuComponent()
+        {
+            var menu = this.ListAvailableMods.ContextMenu;
+            var originalStyle = this.ListAvailableMods.ItemContainerStyle;
+
+            var style = new Style();
+            style.TargetType = typeof(ListViewItem);
+            style.Setters.Add(new Setter(ListViewItem.ContextMenuProperty, menu));
+            style.BasedOn = originalStyle;
+
+            this.ListAvailableMods.ItemContainerStyle = style;
+            this.ListAvailableMods.ContextMenu = null;
         }
 
         private void RebuildModViews()
@@ -90,6 +110,7 @@ namespace HSModLoader.App
                 this.CanvasFadeOut.Visibility = Visibility.Collapsed;
             }
         }
+
         private void ShowProgressOverlay(bool show)
         {
             if (show)
@@ -139,6 +160,7 @@ namespace HSModLoader.App
             this.ShowOverlay(false);
 
         }
+
 
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -338,6 +360,77 @@ namespace HSModLoader.App
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.Save();
+        }
+
+        private void OnRightClickMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var index = this.ListAvailableMods.SelectedIndex;
+
+            if(index >= 0 && index < this.Manager.ModConfigurations.Count)
+            {
+                var configuration = this.Manager.ModConfigurations[index];
+                
+                this.MenuItemEnableMod.IsEnabled = true;
+                this.MenuItemSoftDisableMod.IsEnabled = true;
+                this.MenuItemDisableMod.IsEnabled = true;
+
+                if (configuration.State == ModState.Enabled)
+                {
+                    this.MenuItemEnableMod.IsEnabled = false;
+                }
+                if (configuration.State == ModState.SoftDisabled)
+                {
+                    this.MenuItemSoftDisableMod.IsEnabled = false;
+                }
+                if (configuration.State == ModState.Disabled)
+                {
+                    this.MenuItemDisableMod.IsEnabled = false;
+                }
+                
+            }
+            else
+            {
+                // e.Handled = true;
+            }
+        }
+
+        private void OnMenuItemEnableMod(object sender, RoutedEventArgs e)
+        {
+            var index = this.ListAvailableMods.SelectedIndex;
+
+            if (index >= 0 && index < this.Manager.ModConfigurations.Count)
+            {
+                var configuration = this.Manager.ModConfigurations[index];
+                configuration.State = ModState.Enabled;
+                this.ListAvailableMods.Items.Refresh();
+                this.SelectedMod.Refresh();
+            }
+        }
+
+        private void OnMenuItemSoftDisableMod(object sender, RoutedEventArgs e)
+        {
+            var index = this.ListAvailableMods.SelectedIndex;
+
+            if (index >= 0 && index < this.Manager.ModConfigurations.Count)
+            {
+                var configuration = this.Manager.ModConfigurations[index];
+                configuration.State = ModState.SoftDisabled;
+                this.ListAvailableMods.Items.Refresh();
+                this.SelectedMod.Refresh();
+            }
+        }
+
+        private void OnMenuItemDisableMod(object sender, RoutedEventArgs e)
+        {
+            var index = this.ListAvailableMods.SelectedIndex;
+
+            if (index >= 0 && index < this.Manager.ModConfigurations.Count)
+            {
+                var configuration = this.Manager.ModConfigurations[index];
+                configuration.State = ModState.Disabled;
+                this.ListAvailableMods.Items.Refresh();
+                this.SelectedMod.Refresh();
+            }
         }
 
 
