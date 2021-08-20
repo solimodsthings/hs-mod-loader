@@ -10,24 +10,85 @@ namespace HSModLoader
     /// </summary>
     public class Mod
     {
+        /// <summary>
+        /// An identifier unique to this mod. Identifiers
+        /// must not contain any spaces. A recommended convention
+        /// is [author]-[modname].
+        /// </summary>
         public string Id { get; set; }
-        public string Name { get; set; }
-        public string Version { get; set; }
-        public string Description { get; set; }
-        public string Url { get; set; }
-        public string Author { get; set; }
-        public string AuthorUrl { get; set; }
-        public bool HasCampaign { get; set; }
-        public bool HasMutator { get; set; }
-        public string MutatorStartClass { get; set; }
-        public bool IsSteamWorkshopItem { get; set; }
-        public ulong? SteamWorkshopId { get; set; }
-        public string LastUpdated { get; set; }
-        public List<ModDependency> Depedencies { get; set; }
 
-        public Mod()
+        /// <summary>
+        /// The name of this mod.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// A string describing the version of this mod.
+        /// </summary>
+        public string Version { get; set; }
+
+        /// <summary>
+        /// A description of what this mod does and how
+        /// it works.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// The url to a project site for this mod, if one exists.
+        /// </summary>
+        public string Url { get; set; }
+
+        /// <summary>
+        /// The name of the mod author.
+        /// </summary>
+        public string Author { get; set; }
+
+        /// <summary>
+        /// The url to a site for the mod author, if one exists.
+        /// </summary>
+        public string AuthorUrl { get; set; }
+
+        /// <summary>
+        /// A value indicating how this mod is meant to be distributed.
+        /// </summary>
+        public DistributionType DistributionType { get; set; }
+
+        /// <summary>
+        /// If this mod adds a new mutator, this property
+        /// will contain the name of the mutator class.
+        /// </summary>
+        public string MutatorClass { get; set; }
+
+        /// <summary>
+        /// The workshop ID of this mod if it is part of the
+        /// Steam Workshop as a published item.
+        /// </summary>
+        public ulong? SteamWorkshopId { get; set; }
+
+
+        /// <summary>
+        /// Read-only property indicating whether this mod adds a new mutator.
+        /// </summary>
+        [JsonIgnore]
+        public bool HasMutator
         {
-            this.Depedencies = new List<ModDependency>();
+            get
+            {
+                return !string.IsNullOrEmpty(this.MutatorClass);
+            }
+        }
+
+        /// <summary>
+        /// Read-only property indicating whether this mod is meant to be
+        /// published to or subscribed from the Steam Workshop.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsSteamWorkshopItem
+        {
+            get
+            {
+                return DistributionType == DistributionType.SteamWorkshopItem;
+            }
         }
 
     }

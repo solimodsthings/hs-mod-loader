@@ -344,8 +344,8 @@ namespace HSModLoader
             // mods the player may have added manually
             var allAvailableMutators = this.ModConfigurations
                 .Select(x => x.Mod)
-                .Where(x => x.HasMutator && !string.IsNullOrEmpty(x.MutatorStartClass))
-                .Select(x => x.MutatorStartClass);
+                .Where(x => x.HasMutator && !string.IsNullOrEmpty(x.MutatorClass))
+                .Select(x => x.MutatorClass);
 
             // First we find out what exactly is enabled now
             var enabledMutatorClasses = new List<string>();
@@ -354,9 +354,9 @@ namespace HSModLoader
             {
                 if (config.State == ModState.Enabled) // SoftDisabled mods will not have their mutator class enabled, but their files will still be present
                 {
-                    if (config.Mod.HasMutator && !string.IsNullOrEmpty(config.Mod.MutatorStartClass))
+                    if (config.Mod.HasMutator && !string.IsNullOrEmpty(config.Mod.MutatorClass))
                     {
-                        enabledMutatorClasses.Add(config.Mod.MutatorStartClass);
+                        enabledMutatorClasses.Add(config.Mod.MutatorClass);
                         this.AppendChangeLog(string.Format("Mod {0} is enabled and has a mutator, and needs to be added to the mutator loader list...", config.Mod.Id));
                     }
                 }

@@ -17,4 +17,12 @@ namespace HSModLoader
         Enabled
     }
 
+
+    public enum DistributionType
+    {
+        NotClassified, // A mod that has not yet been published in any format
+        Standalone,
+        SteamWorkshopItem
+    }
+
 }
