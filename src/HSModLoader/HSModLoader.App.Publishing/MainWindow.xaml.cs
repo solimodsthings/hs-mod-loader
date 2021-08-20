@@ -19,6 +19,7 @@ using System.Windows.Shapes;
 
 namespace HSModLoader.App.Publishing
 {
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -27,12 +28,21 @@ namespace HSModLoader.App.Publishing
 
         private ModContext CurrentModContext { get; set; }
 
+        private FileSystemWatcher FileWatcher { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
             this.CurrentModContext = new ModContext();
+            this.FileWatcher = new FileSystemWatcher();
+            this.FileWatcher.Created += OnFilesChanged;
+            this.FileWatcher.Changed += OnFilesChanged;
+            this.FileWatcher.Renamed += OnFilesChanged;
+            this.FileWatcher.Deleted += OnFilesChanged;
+
             this.DataContext = this.CurrentModContext;
         }
+
 
         private void ShowOverlay(bool show)
         {
@@ -59,16 +69,31 @@ namespace HSModLoader.App.Publishing
 
         private void Refresh()
         {
-            if (this.CurrentModContext.Mod == null)
+            Dispatcher.Invoke(() =>
             {
-                this.InfoPanel.IsEnabled = false;
-                this.FileListPanel.IsEnabled = false;
-            }
-            else
-            {
-                this.InfoPanel.IsEnabled = true;
-                this.FileListPanel.IsEnabled = true;
-            }
+                this.ListViewFiles.Items.Clear();
+
+                if (this.CurrentModContext.Mod == null)
+                {
+                    this.InfoPanel.IsEnabled = false;
+                    this.FileListPanel.IsEnabled = false;
+                    this.FileWatcher.EnableRaisingEvents = false;
+                }
+                else
+                {
+                    this.InfoPanel.IsEnabled = true;
+                    this.FileListPanel.IsEnabled = true;
+                    this.FileWatcher.EnableRaisingEvents = true;
+
+                    var files = Directory.GetFiles(this.CurrentModContext.Directory).Select(x => new FileView(x));
+
+                    foreach (var file in files)
+                    {
+                        this.ListViewFiles.Items.Add(file);
+                    }
+
+                }
+            });
         }
 
         private void ShowPopupMessage(string header, string body)
@@ -86,10 +111,6 @@ namespace HSModLoader.App.Publishing
 
         private void Save()
         {
-            this.ShowOverlay(true);
-
-            this.Focus();
-
             var mod = this.CurrentModContext.Mod;
             if (mod != null)
             {
@@ -97,8 +118,6 @@ namespace HSModLoader.App.Publishing
                 var path = System.IO.Path.Combine(this.CurrentModContext.Directory, ModManager.ModInfoFile);
                 File.WriteAllText(path, json);
             }
-
-            this.ShowOverlay(false);
         }
 
         private void OnNewModButtonClick(object sender, RoutedEventArgs e)
@@ -110,9 +129,8 @@ namespace HSModLoader.App.Publishing
 
             if(result == true)
             {
-                this.CurrentModContext.Mod = creation.ResultMod;
-                this.CurrentModContext.Directory = creation.ResultDirectory;
-                this.Refresh();
+                this.SetCurrentMod(creation.ResultMod, creation.ResultDirectory);
+                this.Save();
             }
 
             this.ShowOverlay(false);
@@ -160,17 +178,30 @@ namespace HSModLoader.App.Publishing
                     return;
                 }
 
-                this.CurrentModContext.Mod = mod;
-                this.CurrentModContext.Directory = path;
-                this.Refresh();
-
+                this.SetCurrentMod(mod, path);
+                
             }
 
         }
 
+        private void SetCurrentMod(Mod mod, string directory)
+        {
+            this.CurrentModContext.Mod = mod;
+            this.CurrentModContext.Directory = directory;
+            this.FileWatcher.Path = directory;
+            this.Refresh();
+        }
+
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
+            this.ShowOverlay(true);
             this.Save();
+            this.ShowOverlay(false);
+        }
+
+        private void OnFilesChanged(object sender, FileSystemEventArgs e)
+        {
+            this.Refresh();
         }
 
         private void OnOpenDirectoryButtonClick(object sender, RoutedEventArgs e)

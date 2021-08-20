@@ -146,8 +146,8 @@
 
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn DisplayMemberBinding="{Binding FileType}" Header="Type" Width="75" />
-                            <GridViewColumn DisplayMemberBinding="{Binding FileName}" Header="Name" Width="300"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Type}" Header="Type" Width="75" />
+                            <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name" Width="170"/>
                         </GridView>
                     </ListView.View>
 
