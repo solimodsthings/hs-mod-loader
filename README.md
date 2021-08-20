@@ -33,4 +33,4 @@ This mod loader provides a log of file changes in ```filechanges.log``` whenever
 * [Cethiel's classic gems art](https://opengameart.org/content/gems-classic) ([CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/))
 
 # License
-* This repo is provided under an MIT license ([click here to go to the license file](https://github.com/solimodsthings/hs-mod-loader/blob/main/LICENSE))
+* This tool is provided under an MIT license ([click here to go to the license file](https://github.com/solimodsthings/hs-mod-loader/blob/main/LICENSE))
