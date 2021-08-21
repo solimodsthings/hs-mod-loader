@@ -58,7 +58,7 @@
                 <ui:TitleBarButton x:Name="ForwardButton" Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE710;" ToolTip="New" Click="OnNewModButtonClick"/>
                 <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE8B7;" ToolTip="Open" Click="OnOpenModButtonClick"/>
                 <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE74E;" ToolTip="Save" Click="OnSaveButtonClick"/>
-                <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE898;" ToolTip="Publish"/>
+                <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE898;" ToolTip="Publish" Click="OnPublishButtonClick"/>
             </StackPanel>
 
         </Grid>

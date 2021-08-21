@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -211,6 +213,63 @@ namespace HSModLoader.App.Publishing
                 FileName = "explorer.exe",
                 Arguments = this.CurrentModContext.Directory
             });
+        }
+
+        private void OnPublishButtonClick(object sender, RoutedEventArgs e)
+        {
+
+            this.ShowOverlay(true);
+
+            try
+            {
+                var mod = this.CurrentModContext.Mod;
+
+                if (mod == null)
+                {
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(mod.Id))
+                {
+                    mod.Id = string.Format(
+                        "{0}-{1}",
+                        mod.Author.Replace(" ", string.Empty),
+                        mod.Name.Replace(" ", string.Empty)
+                    );
+                    this.Save();
+                }
+
+                if (mod.DistributionType == DistributionType.NotClassified)
+                {
+                    mod.DistributionType = DistributionType.Standalone;
+                    this.Save();
+                }
+
+                var save = new VistaSaveFileDialog();
+                save.CheckPathExists = true;
+                save.OverwritePrompt = true;
+                save.FileName = this.CurrentModContext.Mod.Id + ".hsmod";
+
+                var result = save.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    var path = save.FileName;
+
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+
+                    ZipFile.CreateFromDirectory(this.CurrentModContext.Directory, path);
+                }
+            }
+            catch(Exception ex)
+            {
+                this.ShowPopupMessage("Error", string.Format("Could not publish file: {0}", ex.Message));
+            }
+
+            this.ShowOverlay(false);
+
         }
     }
 }

@@ -242,14 +242,11 @@ namespace HSModLoader
 
         }
 
-
-
-        
         private bool IsRegistered(Mod newMod)
         {
             foreach (var mod in ModConfigurations.Select(x => x.Mod))
             {
-                if (mod.Id.Equals(newMod.Id) || (mod.Name.Equals(newMod.Name) && mod.Version.Equals(newMod.Version)))
+                if (mod.Id.ToLower().Equals(newMod.Id.ToLower()) || (mod.Name.ToLower().Equals(newMod.Name.ToLower()) && mod.Version.ToLower().Equals(newMod.Version.ToLower())))
                 {
                     return true;
                 }

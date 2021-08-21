@@ -13,6 +13,9 @@ namespace HSModLoader.Console
 
         public static void Main(string[] args)
         {
+            var c = new GameConfiguration(@"B:\Transient\SteamLibrary\steamapps\common\Himeko Sutori\RPGTacGame\Config\RPGTacEngine.ini");
+            c.Load();
+            File.WriteAllText("test.ini", c.ToString());
 
             if (!Directory.Exists(ModWorkingFolder))
             {
@@ -32,10 +35,6 @@ namespace HSModLoader.Console
                 var output = JsonSerializer.Serialize(mod, options);
                 File.WriteAllText(Path.Combine(ModWorkingFolder, ModInfoFile), output);
 
-                foreach(var file in mod.ModFiles)
-                {
-                    File.WriteAllText(Path.Combine(ModWorkingFolder, file.Name), "debug file");
-                }
 
                 var package = mod.Name.Replace(" ", string.Empty).Trim() + ModPackageExtension;
 
@@ -60,13 +59,9 @@ namespace HSModLoader.Console
                 Name = "Test Mod",
                 Version = "0.9.1",
                 Author = "Test Author",
-                HasCampaign = false,
-                HasMutator = true,
-                MutatorStartClass = "Nonexistent.MutatorClass"
+                MutatorClass = "Nonexistent.MutatorClass"
             };
 
-            mod.AddScript("test.u");
-            mod.AddLocalization("some-localization-file.INT");
 
             return mod;
         }
@@ -78,14 +73,9 @@ namespace HSModLoader.Console
                 Name = "Broken Localization Mod",
                 Version = "0.9.1",
                 Author = "Test Author",
-                HasCampaign = false,
-                HasMutator = true,
-                MutatorStartClass = "Nonexistent.MutatorClass"
+                MutatorClass = "Nonexistent.MutatorClass"
             };
 
-            mod.AddScript("test.u");
-            mod.AddLocalization("some-localization-file.INT");
-            mod.AddLocalization("non-existent-language.XYZ");
 
             return mod;
         }
