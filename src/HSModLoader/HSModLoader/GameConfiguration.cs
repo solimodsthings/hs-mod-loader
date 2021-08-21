@@ -63,6 +63,73 @@ namespace HSModLoader
             File.WriteAllText(this.FileName, this.ToString());
         }
 
+        public GameConfigurationSection FindSection(string sectionName)
+        {
+            return this.Sections.Where(x => x.Name == sectionName).FirstOrDefault();
+        }
+
+        public GameConfigurationItem FindItem(string sectionName, string key)
+        {
+            var configSection = this.FindSection(sectionName);
+
+            if (configSection != null)
+            {
+                return configSection.Items.Where(x => x.Key == key).FirstOrDefault();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Ensures the specified key and value exist under the desired section. 
+        /// If the key-value pair does not yet exists, it will be added. If the desired
+        /// section doesn't yet exist it will be added.
+        /// </summary>
+        /// <param name="sectionName">Name of the section the key-value pair will reside in.</param>
+        /// <param name="key">Name of the key.</param>
+        /// <param name="value">The value in the key-value pair.</param>
+        public void Include(string sectionName, string key, string value)
+        {
+            var section = this.Sections.FirstOrDefault(x => x.Name.Equals(sectionName));
+
+            if(section == null)
+            {
+                section = new GameConfigurationSection() { Name = sectionName };
+                this.Sections.Add(section);
+            }
+
+            if (section.Items.FirstOrDefault(x => x.Key == key && x.Value == value) == null)
+            {
+                section.Items.Add(new GameConfigurationItem() { Key = key, Value = value });
+            }
+
+        }
+
+
+        /// <summary>
+        /// Ensures the specified key and value do not exist in the specified section.
+        /// If the key-value pair exists, it will be removed.
+        /// </summary>
+        /// <param name="sectionName"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void Exclude(string sectionName, string key, string value)
+        {
+            var section = this.Sections.FirstOrDefault(x => x.Name.Equals(sectionName));
+
+            if (section != null)
+            {
+                var item = section.Items.FirstOrDefault(x => x.Key == key && x.Value == value);
+
+                if(item != null)
+                {
+                    section.Items.Remove(item);
+                }
+            }
+        }
+
         public override string ToString()
         {
             var result = new StringBuilder();
