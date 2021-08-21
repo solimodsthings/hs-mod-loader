@@ -38,11 +38,6 @@ namespace HSModLoader.App
             this.InitializeComponent();
             this.InitializeContextMenuComponent();
 
-            if (!Directory.Exists("mods"))
-            {
-                Directory.CreateDirectory("mods");
-            }
-
             this.Manager = new ModManager();
             this.Manager.Load();
 
