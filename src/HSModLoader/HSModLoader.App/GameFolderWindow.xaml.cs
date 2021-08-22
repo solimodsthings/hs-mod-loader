@@ -23,14 +23,12 @@ namespace HSModLoader.App
     public partial class GameFolderWindow : Window
     {
         private ModManager Manager;
-        private Validator Validator;
 
         public GameFolderWindow(ModManager manager)
         {
             InitializeComponent();
 
             this.Manager = manager;
-            this.Validator = new Validator();
 
             if(!string.IsNullOrEmpty(Manager.GameFolderPath))
             {
@@ -70,7 +68,7 @@ namespace HSModLoader.App
         {
             var folder = this.TextBoxGameFolderPath.Text;
 
-            if (this.Validator.IsGameFolder(folder))
+            if (GamePath.IsGameFolder(folder))
             {
                 this.Manager.GameFolderPath = folder;
                 this.DialogResult = true;
@@ -81,8 +79,8 @@ namespace HSModLoader.App
                 // Check to see if the user selected a subdirectory of the main game
                 // folder. If they did then it is posisble to extract the correct path.
 
-                var possibleMatch = this.Validator.CheckIfParentIsGameFolder(folder, 3);
-                if(!string.IsNullOrEmpty(possibleMatch) && this.Validator.IsGameFolder(possibleMatch))
+                var possibleMatch = GamePath.ExtractGameFolder(folder, 3);
+                if(!string.IsNullOrEmpty(possibleMatch) && GamePath.IsGameFolder(possibleMatch))
                 {
                     this.Manager.GameFolderPath = possibleMatch;
                     this.DialogResult = true;

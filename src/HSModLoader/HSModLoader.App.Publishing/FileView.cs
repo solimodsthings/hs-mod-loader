@@ -21,7 +21,7 @@ namespace HSModLoader.App.Publishing
 
                 var lower = this.Name.ToLower();
 
-                if (lower.Equals(ModManager.ModInfoFile))
+                if (lower.Equals(Mod.InfoFile))
                 {
                     return "Info";
                 }

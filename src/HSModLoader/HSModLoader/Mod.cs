@@ -11,6 +11,11 @@ namespace HSModLoader
     public class Mod
     {
         /// <summary>
+        /// Name of a mod package's information file.
+        /// </summary>
+        public static readonly string InfoFile = "mod.json";
+
+        /// <summary>
         /// An identifier unique to this mod. Identifiers
         /// must not contain any spaces. A recommended convention
         /// is [author]-[modname].

@@ -10,9 +10,10 @@ using System.Threading.Tasks;
 
 namespace HSModLoader
 {
-    // Not yet sure if this should just be a set of static methods or extension methods
-    // Or whether it should not be part of the core library
-    public class Validator
+    /// <summary>
+    /// Utility methods for validating or extracting the game path.
+    /// </summary>
+    public class GamePath
     {
         /// <summary>
         /// Checks whether the specified path is the root folder
@@ -20,7 +21,7 @@ namespace HSModLoader
         /// </summary>
         /// <param name="path">The path to validate.</param>
         /// <returns>True if the path is the root folder containing the game, else false.</returns>
-        public bool IsGameFolder(string path)
+        public static bool IsGameFolder(string path)
         {
             try
             {
@@ -57,7 +58,7 @@ namespace HSModLoader
         /// <param name="path">The path whose parent folder needs to be validated.</param>
         /// <param name="recurse">The number of times this method should recurse up the directory hierarchy.</param>
         /// <returns></returns>
-        public string CheckIfParentIsGameFolder(string path, int recurse = 0)
+        public static string ExtractGameFolder(string path, int recurse = 0)
         {
             try
             {
@@ -69,7 +70,7 @@ namespace HSModLoader
                 {
                     while (directory != null && limit >= 0)
                     {
-                        if (this.IsGameFolder(directory.FullName))
+                        if (GamePath.IsGameFolder(directory.FullName))
                         {
                             return directory.FullName;
                         }
@@ -89,55 +90,5 @@ namespace HSModLoader
             return null;
         }
 
-        /// <summary>
-        /// Checks if the file at the specificed path is a mod package for the game.
-        /// This method unpackages the mod into a temporary folder which is immediately
-        /// deleted after the validation is complete.
-        /// </summary>
-        /// <param name="filepath">The path to the file to check.</param>
-        /// <returns>True if the file is a mod package, otherwise it is false.</returns>
-        public bool IsModPackage(string filepath)
-        {
-
-            bool result = false;
-
-            if(File.Exists(filepath))
-            {
-                var temporaryFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-                try
-                {
-                    Directory.CreateDirectory(temporaryFolder);
-                    ZipFile.ExtractToDirectory(filepath, temporaryFolder);
-
-                    var modinfo = temporaryFolder + Path.DirectorySeparatorChar + ModManager.ModInfoFile;
-
-                    if (File.Exists(modinfo))
-                    {
-                        var contents = File.ReadAllText(modinfo);
-
-                        var mod = JsonSerializer.Deserialize<Mod>(contents);
-
-                        if(mod != null)
-                        {
-                            result = true;
-                        }
-                    }
-
-                }
-                catch(Exception e)
-                {
-                    e.AppendToLogFile();
-                }
-
-                if(Directory.Exists(temporaryFolder))
-                {
-                    Directory.Delete(temporaryFolder, true);
-                }
-
-            }
-
-            return result;
-        }
     }
 }

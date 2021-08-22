@@ -117,7 +117,7 @@ namespace HSModLoader.App.Publishing
             if (mod != null)
             {
                 var json = JsonSerializer.Serialize(mod, new JsonSerializerOptions() { WriteIndented = true });
-                var path = System.IO.Path.Combine(this.CurrentModContext.Directory, ModManager.ModInfoFile);
+                var path = System.IO.Path.Combine(this.CurrentModContext.Directory, Mod.InfoFile);
                 File.WriteAllText(path, json);
             }
         }
@@ -156,7 +156,7 @@ namespace HSModLoader.App.Publishing
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 var path = folder.SelectedPath;
-                var modinfo = System.IO.Path.Combine(path, ModManager.ModInfoFile);
+                var modinfo = System.IO.Path.Combine(path, Mod.InfoFile);
 
                 if (!Directory.Exists(path))
                 {

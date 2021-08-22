@@ -235,14 +235,10 @@ namespace HSModLoader.App
 
             if(files != null)
             {
-                var v = new Validator();
                 foreach (var filepath in files)
                 {
-                    if (File.Exists(filepath) && v.IsModPackage(filepath))
-                    {
-                        var result = this.Manager.RegisterMod(filepath);
-                        this.HandleRegistrationResult(result);
-                    }
+                    var result = this.Manager.RegisterMod(filepath);
+                    this.HandleRegistrationResult(result);
                 }
             }
 
@@ -257,12 +253,8 @@ namespace HSModLoader.App
 
             if (browse.ShowDialog() == true)
             {
-                var v = new Validator();
-                if (File.Exists(browse.FileName) && v.IsModPackage(browse.FileName))
-                {
-                    var result = this.Manager.RegisterMod(browse.FileName);
-                    this.HandleRegistrationResult(result);
-                }
+                var result = this.Manager.RegisterMod(browse.FileName);
+                this.HandleRegistrationResult(result);
             }
         }
 

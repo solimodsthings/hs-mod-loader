@@ -36,7 +36,6 @@ namespace HSModLoader
         // Files that are not part of the base game
         private static readonly string ConfigurationFile = "config.json"; // relative to app folder
         private static readonly string ChangeLogFile = "filechanges.log"; // relative to app folder
-        public static readonly string ModInfoFile = "mod.json";           // relative to a mod's storage folder, TODO: move this to Mod class
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 
@@ -99,7 +98,7 @@ namespace HSModLoader
                             throw new ModException("The storage folder for a previously managed mod no longer exists.");
                         }
 
-                        var modinfo = Path.Combine(configuration.ModStorageFolder, ModManager.ModInfoFile);
+                        var modinfo = Path.Combine(configuration.ModStorageFolder, Mod.InfoFile);
 
                         if(!File.Exists(modinfo))
                         {
@@ -121,7 +120,7 @@ namespace HSModLoader
 
                         foreach(var subfolder in subfolders)
                         {
-                            var modinfo = Path.Combine(subfolder, ModManager.ModInfoFile);
+                            var modinfo = Path.Combine(subfolder, Mod.InfoFile);
 
                             if(File.Exists(modinfo))
                             {
@@ -230,7 +229,7 @@ namespace HSModLoader
                     Directory.CreateDirectory(temporaryDestination);
                     ZipFile.ExtractToDirectory(filepath, temporaryDestination);
 
-                    var modinfo = Path.Combine(temporaryDestination, ModInfoFile);
+                    var modinfo = Path.Combine(temporaryDestination, Mod.InfoFile);
 
                     if (!File.Exists(modinfo))
                     {
@@ -258,7 +257,7 @@ namespace HSModLoader
                     // message might be too cryptic and so the message surfaced to the
                     // user is genericized.
                     e.AppendToLogFile();
-                    result.ErrorMessage = "Could not load mod. See error.log file.";
+                    result.ErrorMessage = string.Format("Could not load mod at '{0}'. See error.log file.", filepath);
                 }
 
                 // The rest of this method is just folder clean-up
