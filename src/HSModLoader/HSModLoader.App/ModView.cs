@@ -62,6 +62,22 @@ namespace HSModLoader.App
             }
         }
 
+        public string ManagedStatus
+        {
+            get
+            {
+                if(Configuration.IsManaged)
+                {
+                    return "Managed";
+                }
+                else
+                {
+                    return "Unmanaged";
+                }
+            }
+            
+        }
+
         public bool IsEnabled
         {
             get
@@ -124,6 +140,10 @@ namespace HSModLoader.App
                 else if (Configuration.State == ModState.SoftDisabled)
                 {
                     return "Soft-Disabled";
+                }
+                else if (Configuration.State == ModState.Undetermined)
+                {
+                    return "Undetermined";
                 }
                 else
                 {

@@ -80,9 +80,10 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding Order}" Header="Order" Width="75" />
-                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="300"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="280"/>
                             <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="75"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="150"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding ManagedStatus}" Header="Type" Width="100"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="100"/>
                         </GridView>
                     </ListView.View>
 
@@ -133,9 +134,6 @@
                         
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Author</Label>
                         <Label x:Name="LabelAuthorName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Author}"/>
-                        
-                        <Label Style="{StaticResource InfoLabelHeaderStyle}">State</Label>
-                        <Label x:Name="LabelModState" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding State}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Bottom">

@@ -39,7 +39,12 @@ namespace HSModLoader.App
             this.InitializeContextMenuComponent();
 
             this.Manager = new ModManager();
-            this.Manager.Load();
+            var result = this.Manager.Load();
+
+            if(!result.IsSuccessful)
+            {
+                this.ShowPopupMessage("Warning", result.ErrorMessage);
+            }
 
             this.ModViews = new ObservableCollection<ModView>();
             this.ListAvailableMods.ItemsSource = this.ModViews;
@@ -148,7 +153,11 @@ namespace HSModLoader.App
         {
             this.ShowOverlay(true);
             var dialog = new MessageWindow(header, body);
-            dialog.Owner = this;
+
+            if(this.IsVisible)
+            {
+                dialog.Owner = this;
+            }
 
             dialog.ShowDialog();
 
@@ -329,9 +338,6 @@ namespace HSModLoader.App
                 Dispatcher.Invoke(() =>
                 {
                     this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
-                    this.Manager.Save();
-                    this.RebuildModViews();
-                    this.SelectedMod.Refresh();
                 });
             }
             else
@@ -344,6 +350,15 @@ namespace HSModLoader.App
                     Thread.Sleep((int)(0.5 * 1000) - (int)(duration * 1000));
                 }
             }
+
+            Dispatcher.Invoke(() =>
+            {
+                this.Manager.Save();
+                // this.RebuildModViews();
+                this.ListAvailableMods.Items.Refresh();
+                this.SelectedMod.Refresh();
+            });
+
         }
 
 
