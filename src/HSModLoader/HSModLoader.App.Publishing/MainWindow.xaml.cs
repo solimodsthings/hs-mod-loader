@@ -239,11 +239,13 @@ namespace HSModLoader.App.Publishing
                     this.Save();
                 }
 
-                if (mod.DistributionType == DistributionType.NotClassified)
+                /*
+                if (mod.DistributionType == RegistrationType.NotClassified)
                 {
-                    mod.DistributionType = DistributionType.Standalone;
+                    mod.DistributionType = RegistrationType.Standalone;
                     this.Save();
                 }
+                */
 
                 var save = new VistaSaveFileDialog();
                 save.CheckPathExists = true;

@@ -80,10 +80,10 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding Order}" Header="Order" Width="75" />
-                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="280"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="240"/>
                             <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="75"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding ManagedStatus}" Header="Type" Width="100"/>
                             <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="100"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding RegistrationType}" Header="Type" Width="110"/>
                         </GridView>
                     </ListView.View>
 
@@ -166,7 +166,7 @@
                         
                         <Button Click="OnMoveModOrderUp" Margin="0,4,0,4">Move Up</Button>
                         <Button Click="OnMoveModOrderDown"  Margin="0,4,0,4">Move Down</Button>
-                        <Button Click="OnRemoveMod" Margin="0,4,0,4">Remove</Button>
+                        <Button x:Name="ButtonRemoveMod" Click="OnRemoveMod" Margin="0,4,0,4">Remove</Button>
                         
                     </StackPanel>
                 </Grid>

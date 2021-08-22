@@ -27,7 +27,14 @@ namespace HSModLoader.App
         {
             get
             {
-                return Configuration.Mod?.Name ?? string.Empty;
+                var name = Configuration.Mod?.Name ?? string.Empty;
+
+                if(!this.IsManaged)
+                {
+                    name += " (Unmanaged)";
+                }
+
+                return name;
             }
         }
 
@@ -62,20 +69,36 @@ namespace HSModLoader.App
             }
         }
 
-        public string ManagedStatus
+        public bool IsManaged
         {
             get
             {
-                if(Configuration.IsManaged)
+                return Configuration.IsManaged;
+            }
+            
+        }
+
+        public string RegistrationType
+        {
+            get
+            {
+                if (Configuration.Mod == null) 
+                { 
+                    return string.Empty; 
+                }
+                else if (Configuration.RegistrationType == HSModLoader.RegistrationType.Standalone)
                 {
-                    return "Managed";
+                    return "Standalone";
+                }
+                else if (Configuration.RegistrationType == HSModLoader.RegistrationType.SteamWorkshopItem)
+                {
+                    return "Steam";
                 }
                 else
                 {
-                    return "Unmanaged";
+                    return "Undetermined";
                 }
             }
-            
         }
 
         public bool IsEnabled

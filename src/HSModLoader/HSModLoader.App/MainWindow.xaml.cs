@@ -141,7 +141,9 @@ namespace HSModLoader.App
             }
             else if (result == true && !string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
-                // this.Manager.InitializeGameModsFolder();
+                this.RebuildModViews();
+                this.ListAvailableMods.Items.Refresh();
+                this.SelectedMod.Refresh();
                 this.Save();
             }
 
@@ -175,6 +177,18 @@ namespace HSModLoader.App
                 var mod = this.Manager.ModConfigurations[selection];
                 this.SelectedMod.Set(mod);
                 this.InfoPanel.IsEnabled = true;
+
+                if(mod.RegistrationType == RegistrationType.SteamWorkshopItem)
+                {
+                    this.ButtonRemoveMod.IsEnabled = false;
+                    this.ButtonRemoveMod.ToolTip = "Unsubscribe from the Steam Workshop item to remove this mod.";
+                }
+                else
+                {
+                    this.ButtonRemoveMod.IsEnabled = true;
+                    this.ButtonRemoveMod.ToolTip = null;
+                }
+
             }
             else
             {
