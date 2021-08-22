@@ -71,10 +71,13 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Deserializes this ModManager from disk.
+        /// Deserializes this ModManager from disk. Also checks the
+        /// mods folder for any new mod packages.
         /// </summary>
-        public void Load()
+        public Result Load()
         {
+            var result = new Result();
+
             if (File.Exists(ConfigurationFile))
             {
                 var json = File.ReadAllText(ConfigurationFile);
@@ -86,28 +89,113 @@ namespace HSModLoader
                     this.ModConfigurations = m.ModConfigurations;
                     this.GameFolderPath = m.GameFolderPath;
 
+                    // Instantiate mod configurations from the mod manager's
+                    // json file.
                     foreach(var configuration in this.ModConfigurations)
                     {
-                        var modinfo = Path.Combine(configuration.ModStorageFolder, ModInfoFile);
 
-                        if (File.Exists(modinfo))
+                        if(!Directory.Exists(configuration.ModStorageFolder))
                         {
-                            var contents = File.ReadAllText(modinfo);
-                            configuration.Mod = JsonSerializer.Deserialize<Mod>(contents);
+                            throw new ModException("The storage folder for a previously managed mod no longer exists.");
                         }
-                        else
+
+                        var modinfo = Path.Combine(configuration.ModStorageFolder, ModManager.ModInfoFile);
+
+                        if(!File.Exists(modinfo))
                         {
-                            throw new FileNotFoundException(string.Format("A registered mod is missing its mod.json file. Expected the file to exist at {0}.", modinfo));
+                            throw new ModException(string.Format("A registered mod is missing its mod.json file. Expected the file to exist at {0}.", modinfo));
                         }
+
+                        var contents = File.ReadAllText(modinfo);
+                        configuration.Mod = JsonSerializer.Deserialize<Mod>(contents);
+                        configuration.IsManaged = true;
                     }
 
+                    var modsFolder = Path.Combine(this.GameFolderPath, GameModsFolder);
+
+                    // Attempt to instantiate mod configurations from the mods
+                    // folder.
+                    if(Directory.Exists(modsFolder))
+                    {
+                        var subfolders = Directory.GetDirectories(modsFolder);
+
+                        foreach(var subfolder in subfolders)
+                        {
+                            var modinfo = Path.Combine(subfolder, ModManager.ModInfoFile);
+
+                            if(File.Exists(modinfo))
+                            {
+                                var contents = File.ReadAllText(modinfo);
+                                var mod = JsonSerializer.Deserialize<Mod>(contents);
+
+                                if(!this.IsRegistered(mod))
+                                {
+                                    var newConfiguration = this.RegisterMod(mod, subfolder);
+                                    newConfiguration.State = this.AssessFileState(newConfiguration);
+                                    newConfiguration.IsManaged = false;
+                                }
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        // No action. It is a valid scenario for the mods folder to have been created yet.
+                    }
+                    
+                    result.IsSuccessful = true;
+
+                }
+                catch(ModException e)
+                {
+                    result.ErrorMessage = e.Message;
+                    e.AppendToLogFile();
                 }
                 catch(Exception e)
                 {
+                    result.ErrorMessage = "Failed to load mod manager configuration file. See error.log.";
                     e.AppendToLogFile();
                 }
                 
             }
+            else
+            {
+                // No action. It is a valid scenario for this file to not exist.
+            }
+
+            return result;
+
+        }
+
+        private ModState AssessFileState(ModConfiguration configuration)
+        {
+            var mod = configuration.Mod;
+            var gameEngineConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameEngineConfigurationFile);
+            var gameEngineConfig = new GameConfiguration(gameEngineConfigPath);
+            gameEngineConfig.Load();
+
+            var relativePath = this.GetRelativeModStoragePath(configuration);
+            var hasContentPathDefined = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineContentPathKey, relativePath);
+            var hasLocalizationPathDefined = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
+            var hasScriptsPathDefined = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
+
+            if(hasContentPathDefined && hasLocalizationPathDefined && hasScriptsPathDefined)
+            {
+                return ModState.Enabled;
+            }
+            else if(hasContentPathDefined && hasLocalizationPathDefined)
+            {
+                return ModState.SoftDisabled;
+            }
+            else if(!(hasContentPathDefined && hasLocalizationPathDefined && hasScriptsPathDefined))
+            {
+                return ModState.Disabled;
+            }
+            else
+            {
+                return ModState.Undetermined;
+            }
+
         }
 
         /// <summary>
@@ -135,7 +223,7 @@ namespace HSModLoader
             else
             {
                 var temporaryDestination = Path.Combine(this.GameFolderPath, GameModsFolder, Path.GetRandomFileName());
-                var configuration = new ModConfiguration();
+                ModConfiguration configuration = null;
 
                 try
                 {
@@ -151,36 +239,8 @@ namespace HSModLoader
 
                     var contents = File.ReadAllText(modinfo);
                     var mod = JsonSerializer.Deserialize<Mod>(contents);
-
-                    if(string.IsNullOrEmpty(mod.Id))
-                    {
-                        throw new ModRegistrationException(mod, "Cannot register a mod that has no defined ID.");
-                    }
-
-                    if (this.IsRegistered(mod))
-                    {
-                        throw new ModRegistrationException(mod, string.Format("Could not register mod because '{0}' version {1} already exists.", mod.Name, mod.Version));
-                    }
-
-                    var newModPackageFolder = Path.Combine(this.GameFolderPath, GameModsFolder, mod.Id);
-
-                    if (Directory.Exists(newModPackageFolder))
-                    {
-                        throw new ModRegistrationException(mod, string.Format("Could not register mod because a folder already exists for mod with ID '{0}'", mod.Id));
-                    }
-                    else
-                    {
-                        Directory.Move(temporaryDestination, newModPackageFolder);
-                    }
-
-                    configuration.Mod = mod;
-                    configuration.ModStorageFolder = newModPackageFolder;
-                    configuration.State = ModState.Disabled;
-
-                    // order matters for next two statements
-                    this.ModConfigurations.Add(configuration);
-                    configuration.OrderIndex = this.ModConfigurations.Count - 1;
-
+                    configuration = this.RegisterMod(mod, temporaryDestination);
+                    configuration.IsManaged = true;
                     result.IsSuccessful = true;
 
                 }
@@ -204,12 +264,12 @@ namespace HSModLoader
                 // The rest of this method is just folder clean-up
                 if(!result.IsSuccessful)
                 {
-                    if (this.ModConfigurations.Contains(configuration))
+                    if (configuration != null && this.ModConfigurations.Contains(configuration))
                     {
                         this.ModConfigurations.Remove(configuration);
                     }
 
-                    if (Directory.Exists(configuration.ModStorageFolder))
+                    if (configuration != null && Directory.Exists(configuration.ModStorageFolder))
                     {
                         Directory.Delete(configuration.ModStorageFolder, true);
                     }
@@ -223,6 +283,57 @@ namespace HSModLoader
             }
 
             return result;
+
+        }
+
+        /// <summary>
+        /// Note: this method will throw ModRegistrationExceptions.
+        /// Note: the specified path for unmanagedStorageFolder will get moved.
+        /// </summary>
+        private ModConfiguration RegisterMod(Mod newMod, string unmanagedStorageFolder = null)
+        {
+            if (string.IsNullOrEmpty(newMod.Id))
+            {
+                throw new ModRegistrationException(newMod, "Cannot register a mod that has no defined ID.");
+            }
+
+            if (this.IsRegistered(newMod))
+            {
+                throw new ModRegistrationException(newMod, string.Format("Could not register mod because '{0}' version {1} already exists.", newMod.Name, newMod.Version));
+            }
+
+            if (unmanagedStorageFolder != null && !Directory.Exists(unmanagedStorageFolder))
+            {
+                throw new ModRegistrationException(newMod, string.Format("The specified unmanaged storage folder doesn't exist for mod with ID '{0}'", newMod.Id));
+            }
+
+            var newModStorageFolder = Path.Combine(this.GameFolderPath, GameModsFolder, newMod.Id);
+
+            if (unmanagedStorageFolder != newModStorageFolder)
+            {
+                if (Directory.Exists(newModStorageFolder))
+                {
+                    throw new ModRegistrationException(newMod, string.Format("Could not register mod because a managed storage folder already exists for mod with ID '{0}'", newMod.Id));
+                }
+
+                if (unmanagedStorageFolder != null)
+                {
+                    Directory.Move(unmanagedStorageFolder, newModStorageFolder);
+                }
+            }
+            
+            var configuration = new ModConfiguration()
+            {
+                Mod = newMod,
+                ModStorageFolder = newModStorageFolder,
+                State = ModState.Disabled
+            };
+
+            // order matters for next two statements
+            this.ModConfigurations.Add(configuration);
+            configuration.OrderIndex = this.ModConfigurations.Count - 1;
+
+            return configuration;
 
         }
 
@@ -419,6 +530,8 @@ namespace HSModLoader
 
             foreach (var configuration in this.ModConfigurations)
             {
+                configuration.IsManaged = true;
+
                 // A reminder here that soft-disabled mods have scripts disabled, but content files remain enabled
                 // to allow save files to mostly work correctly
                 if (configuration.State == ModState.Enabled || configuration.State == ModState.SoftDisabled)

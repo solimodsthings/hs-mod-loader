@@ -26,5 +26,13 @@ namespace HSModLoader
         public ModState State { get; set; }
         public int OrderIndex { get; set; }
 
+        /// <summary>
+        /// This value will be true unless the mod was
+        /// dropped directly into the mods folder and has
+        /// yet to be explicitly enabled or disabled.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsManaged { get; set; }
+
     }
 }
