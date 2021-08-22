@@ -21,6 +21,11 @@ namespace HSModLoader
             this.Sections = new List<GameConfigurationSection>();
         }
 
+        /// <summary>
+        /// Loads the game configuration (.ini) file's data and structure
+        /// into memory. Property <see cref="Sections">Sections</see> will be
+        /// populated after a call to this method.
+        /// </summary>
         public void Load()
         {
             this.Sections.Clear();
@@ -58,16 +63,27 @@ namespace HSModLoader
             }
         }
 
+        /// <summary>
+        /// Saves this game configuration back to its original .ini file.
+        /// Any changes to property <see cref="Sections">Sections</see> will be
+        /// reflected in the .ini file.
+        /// </summary>
         public void Save()
         {
             File.WriteAllText(this.FileName, this.ToString());
         }
 
+        /// <summary>
+        /// Returns a GameConfigurationSection with the specified name. If no match is found, this method returns null.
+        /// </summary>
         public GameConfigurationSection FindSection(string sectionName)
         {
             return this.Sections.Where(x => x.Name == sectionName).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a GameConfigurationItem with the specified key in the specified section name. If no match is found, this method returns null.
+        /// </summary>
         public GameConfigurationItem FindItem(string sectionName, string key)
         {
             var configSection = this.FindSection(sectionName);
@@ -82,6 +98,9 @@ namespace HSModLoader
             }
         }
 
+        /// <summary>
+        /// Returns true if the specified key-value pair exists under the specified section.
+        /// </summary>
         public bool IsIncluded(string sectionName, string key, string value)
         {
             var section = this.Sections.FirstOrDefault(x => x.Name.Equals(sectionName));

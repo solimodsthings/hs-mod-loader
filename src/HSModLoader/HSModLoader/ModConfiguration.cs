@@ -23,7 +23,14 @@ namespace HSModLoader
         /// </summary>
         public string ModStorageFolder { get; set; }
 
+        /// <summary>
+        /// The state of the mod.
+        /// </summary>
         public ModState State { get; set; }
+
+        /// <summary>
+        /// This affects mutator class load order.
+        /// </summary>
         public int OrderIndex { get; set; }
 
         /// <summary>

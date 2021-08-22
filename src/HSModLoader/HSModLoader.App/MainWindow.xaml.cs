@@ -141,7 +141,7 @@ namespace HSModLoader.App
             }
             else if (result == true && !string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
-                this.Manager.InitializeGameModsFolder();
+                // this.Manager.InitializeGameModsFolder();
                 this.Save();
             }
 

@@ -67,30 +67,36 @@ namespace HSModLoader.App
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
             var folder = this.TextBoxGameFolderPath.Text;
+            var result = this.Manager.RegisterGameFolderPath(folder);
 
-            if (GamePath.IsGameFolder(folder))
+            if (result.IsSuccessful)
             {
-                this.Manager.GameFolderPath = folder;
                 this.DialogResult = true;
                 this.Close();
             }
             else
             {
-                // Check to see if the user selected a subdirectory of the main game
+                // Thes specified path wasn't accepted by ModManager so 
+                // check to see if the user selected a subdirectory of the main game
                 // folder. If they did then it is posisble to extract the correct path.
 
                 var possibleMatch = GamePath.ExtractGameFolder(folder, 3);
-                if(!string.IsNullOrEmpty(possibleMatch) && GamePath.IsGameFolder(possibleMatch))
+                if(!string.IsNullOrEmpty(possibleMatch))
                 {
-                    this.Manager.GameFolderPath = possibleMatch;
-                    this.DialogResult = true;
-                    this.Close();
+                    result = this.Manager.RegisterGameFolderPath(possibleMatch);
+
+                    if(result.IsSuccessful)
+                    {
+                        this.DialogResult = true;
+                        this.Close();
+                    }
                 }
-                else
-                {
-                    this.TextBoxGameFolderPath.Text = string.Empty;
-                    this.ShowErrorMessage(true, "The selected folder cannot be accessed, does not contain Himeko Sutori, or is not a folder.");
-                }
+            }
+
+            if(!result.IsSuccessful)
+            {
+                this.TextBoxGameFolderPath.Text = string.Empty;
+                this.ShowErrorMessage(true, "The selected folder cannot be accessed, does not contain Himeko Sutori, or is not a folder.");
             }
         }
 

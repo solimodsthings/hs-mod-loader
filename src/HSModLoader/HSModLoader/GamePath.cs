@@ -57,7 +57,7 @@ namespace HSModLoader
         /// </summary>
         /// <param name="path">The path whose parent folder needs to be validated.</param>
         /// <param name="recurse">The number of times this method should recurse up the directory hierarchy.</param>
-        /// <returns></returns>
+        /// <returns>The path to a parent directory that is actually the game directory. If no such parent exists, the return value is null.</returns>
         public static string ExtractGameFolder(string path, int recurse = 0)
         {
             try
