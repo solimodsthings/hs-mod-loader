@@ -82,6 +82,21 @@ namespace HSModLoader
             }
         }
 
+        public bool IsIncluded(string sectionName, string key, string value)
+        {
+            var section = this.Sections.FirstOrDefault(x => x.Name.Equals(sectionName));
+
+            if (section != null)
+            {
+                if (section.Items.FirstOrDefault(x => x.Key == key && x.Value == value) != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Ensures the specified key and value exist under the desired section. 
         /// If the key-value pair does not yet exists, it will be added. If the desired
