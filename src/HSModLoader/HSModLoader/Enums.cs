@@ -14,7 +14,8 @@ namespace HSModLoader
     {
         Disabled,
         SoftDisabled,
-        Enabled
+        Enabled,
+        Undetermined
     }
 
 
