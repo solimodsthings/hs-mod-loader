@@ -19,9 +19,8 @@ namespace HSModLoader
     }
 
 
-    public enum DistributionType
+    public enum RegistrationType
     {
-        NotClassified, // A mod that has not yet been published in any format
         Standalone,
         SteamWorkshopItem
     }

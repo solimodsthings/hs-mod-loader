@@ -34,6 +34,11 @@ namespace HSModLoader
         public int OrderIndex { get; set; }
 
         /// <summary>
+        /// A value indicating how this mod was registered.
+        /// </summary>
+        public RegistrationType RegistrationType { get; set; }
+
+        /// <summary>
         /// This value will be true unless the mod was
         /// dropped directly into the mods folder and has
         /// yet to be explicitly enabled or disabled.

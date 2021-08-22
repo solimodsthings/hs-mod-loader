@@ -54,11 +54,6 @@ namespace HSModLoader
         public string AuthorUrl { get; set; }
 
         /// <summary>
-        /// A value indicating how this mod is meant to be distributed.
-        /// </summary>
-        public DistributionType DistributionType { get; set; }
-
-        /// <summary>
         /// If this mod adds a new mutator, this property
         /// will contain the name of the mutator class.
         /// </summary>
@@ -92,7 +87,7 @@ namespace HSModLoader
         {
             get
             {
-                return DistributionType == DistributionType.SteamWorkshopItem;
+                return this.SteamWorkshopId != null;
             }
         }
 
