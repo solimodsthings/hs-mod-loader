@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/src/HSModLoader/HSModLoader.App.Publishing/steam_api64.dll
+/src/HSModLoader/HSModLoader.App.Publishing/Steamworks.NET.dll

@@ -117,13 +117,10 @@
                     <TextBox Grid.Row="6" Grid.Column="2" Margin="0,4,0,4" AcceptsReturn="True" AcceptsTab="True" TextWrapping="WrapWithOverflow"  Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
 
                     <Label Grid.Row="7" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
-                    <TextBox Grid.Row="7" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId"></TextBox>
+                    <TextBox Grid.Row="7" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=Id}"></TextBox>
 
                     <Label  Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
-                    <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"></TextBox>
-
-
-
+                    <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>
 
                 </Grid>
             </GroupBox>
@@ -161,6 +158,7 @@
 
         <Canvas x:Name="CanvasFadeOut" Panel.ZIndex="100" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Black" Opacity="0.5" Visibility="Collapsed"/>
         <ui:ProgressRing x:Name="ProgressRing" Panel.ZIndex="101" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" IsActive="true" Height="200" Width="200" Foreground="White" Visibility="Collapsed"/>
+        <TextBlock x:Name="TextboxProgress" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="40" Foreground="White" Panel.ZIndex="102" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Visibility="Collapsed"/>
 
     </Grid>
 </Window>
