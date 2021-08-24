@@ -36,7 +36,8 @@ namespace HSModLoader.App.Publishing
         private FileSystemWatcher FileWatcher { get; set; }
 
         private ulong UploadItemId { get; set; }
-        private bool UploadSubmissionComplete { get; set; }
+        private bool SubmissionFinished { get; set; }
+        private bool SubmissionSuccessful { get; set; }
 
         public MainWindow()
         {
@@ -54,25 +55,32 @@ namespace HSModLoader.App.Publishing
 
         private void ShowOverlay(bool show)
         {
-            if (show)
+            Dispatcher.Invoke(() =>
             {
-                this.CanvasFadeOut.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                this.CanvasFadeOut.Visibility = Visibility.Collapsed;
-            }
+                if (show)
+                {
+                    this.CanvasFadeOut.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.CanvasFadeOut.Visibility = Visibility.Collapsed;
+                }
+            });
+            
         }
         private void ShowProgressOverlay(bool show)
         {
-            if (show)
+            Dispatcher.Invoke(() =>
             {
-                this.ProgressRing.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                this.ProgressRing.Visibility = Visibility.Collapsed;
-            }
+                if (show)
+                {
+                    this.ProgressRing.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.ProgressRing.Visibility = Visibility.Collapsed;
+                }
+            });
         }
 
         private void RefreshFiles()
@@ -104,16 +112,27 @@ namespace HSModLoader.App.Publishing
             });
         }
 
-        private void ShowPopupMessage(string header, string body)
+        private void ShowPopupMessage(string header, string body, bool useOverlay = true)
         {
-            this.ShowOverlay(true);
-            var dialog = new MessageWindow(header, body);
-            dialog.Owner = this;
 
-            dialog.ShowDialog();
+            Dispatcher.Invoke(() =>
+            {
+                if (useOverlay)
+                {
+                    this.ShowOverlay(true);
+                }
 
-            this.ShowOverlay(false);
 
+                var dialog = new MessageWindow(header, body);
+                dialog.Owner = this;
+
+                dialog.ShowDialog();
+
+                if (useOverlay)
+                {
+                    this.ShowOverlay(false);
+                }
+            });
         }
 
 
@@ -287,15 +306,8 @@ namespace HSModLoader.App.Publishing
                     this.Save();
                 }
 
-                /*
-                if (mod.DistributionType == RegistrationType.NotClassified)
-                {
-                    mod.DistributionType = RegistrationType.Standalone;
-                    this.Save();
-                }
-                */
-
                 var save = new VistaSaveFileDialog();
+                save.InitialDirectory = new DirectoryInfo(this.CurrentModContext.Directory).Parent.FullName;
                 save.CheckPathExists = true;
                 save.OverwritePrompt = true;
                 save.FileName = this.CurrentModContext.Mod.Id + ".hsmod";
@@ -328,7 +340,8 @@ namespace HSModLoader.App.Publishing
 
                 bool isNewItem = false;
                 this.UploadItemId = 0;
-                this.UploadSubmissionComplete = false;
+                this.SubmissionFinished = false;
+                this.SubmissionSuccessful = false;
 
                 if (mod.SteamWorkshopId.HasValue)
                 {
@@ -380,7 +393,7 @@ namespace HSModLoader.App.Publishing
 
                     this.ShowProgressMessage("Uploading mod files");
 
-                    while (!UploadSubmissionComplete)
+                    while (!SubmissionFinished)
                     {
                         SteamAPI.RunCallbacks();
 
@@ -399,17 +412,19 @@ namespace HSModLoader.App.Publishing
                         this.Save();
                         this.ShowProgressOverlay(false);
 
-                        if (isNewItem)
+                        if(this.SubmissionSuccessful)
                         {
-                            this.ShowPopupMessage("Success", "Successfully uploaded your mod as a new Steam Workshop item!"
-                                + " Visit your new workshop item in Steam to add screenshots.");
+                            if (isNewItem)
+                            {
+                                this.ShowPopupMessage("Success", "Successfully uploaded your mod as a new Steam Workshop item!"
+                                    + " Visit your new workshop item in Steam to add screenshots.", false);
+                            }
+                            else
+                            {
+                                this.ShowPopupMessage("Success", "Successfully updated the Steam Workshop item for this mod!"
+                                    + " Visit your workshop item in Steam to edit your change notes.", false);
+                            }
                         }
-                        else
-                        {
-                            this.ShowPopupMessage("Success", "Successfully updated the Steam Workshop item for this mod!"
-                                + " Visit your workshop item in Steam to edit your change notes.");
-                        }
-                        
                     });
                     
                 }
@@ -418,7 +433,7 @@ namespace HSModLoader.App.Publishing
             {
                 Dispatcher.Invoke(() =>
                 {
-                    this.ShowPopupMessage("Error", ex.Message);
+                    this.ShowPopupMessage("Error", ex.Message, false);
                 });
             }
         }
@@ -444,6 +459,7 @@ namespace HSModLoader.App.Publishing
         {
             Dispatcher.Invoke(() =>
             {
+                this.ShowProgressMessage(string.Empty);
                 this.ShowProgressOverlay(false);
                 this.ShowOverlay(false);
             });
@@ -457,20 +473,24 @@ namespace HSModLoader.App.Publishing
             }
             else
             {
-                this.ShowPopupMessage("Error", "Failed to create a new Steam Workshop item for your mod.");
+                this.ShowPopupMessage("Error", "Failed to create a new Steam Workshop item for your mod.", false);
                 this.OnPublishSteamModComplete(null, null);
             }
         }
 
         private void OnSteamWorkshopItemSubmission(SubmitItemUpdateResult_t result, bool failure)
         {
+
+            this.SubmissionFinished = true;
+
             if (result.m_eResult == EResult.k_EResultOK)
             {
-                this.UploadSubmissionComplete = true;
+                this.SubmissionSuccessful = true;
             }
             else
             {
-                this.ShowPopupMessage("Error", "Failed to upload mod files to the Steam Workshop.");
+                this.ShowPopupMessage("Error", 
+                    string.Format("Failed to upload mod files to the Steam Workshop. There either does not exist a workshop item with ID {0} or you don't have permissions to update it.", this.CurrentModContext.SteamId), false);
                 this.OnPublishSteamModComplete(null, null);
             }
         }
