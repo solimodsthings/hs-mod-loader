@@ -33,6 +33,7 @@ This repository contains a mod loader and management tool for [Himeko Sutori](ht
 ## Dependencies
 * [ModernWpf](https://github.com/Kinnara/ModernWpf) ([MIT license](https://github.com/Kinnara/ModernWpf/blob/master/LICENSE))
 * [Ookii Dialogs](https://github.com/ookii-dialogs/ookii-dialogs-wpf) ([BSD license](https://github.com/ookii-dialogs/ookii-dialogs-wpf/blob/master/LICENSE))
+* [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET) ([MIT license](https://github.com/rlabrecque/Steamworks.NET/blob/master/LICENSE.txt))
 * [Cethiel's classic gems art](https://opengameart.org/content/gems-classic) ([CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/))
 
 ## License
