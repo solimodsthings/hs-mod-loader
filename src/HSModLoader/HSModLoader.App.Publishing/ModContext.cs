@@ -51,6 +51,34 @@ namespace HSModLoader.App.Publishing
             }
         }
 
+        public string Id
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.Id;
+            }
+            set
+            {
+                Mod.Id= value;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+
+        public string SteamId
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.SteamWorkshopId.ToString();
+            }
+            set
+            {
+                Mod.SteamWorkshopId = ulong.Parse(value);
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+
         public string Version
         {
             get
