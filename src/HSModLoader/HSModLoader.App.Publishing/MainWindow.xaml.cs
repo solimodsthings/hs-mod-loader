@@ -32,9 +32,8 @@ namespace HSModLoader.App.Publishing
     {
 
         private ModContext CurrentModContext { get; set; }
-
         private FileSystemWatcher FileWatcher { get; set; }
-
+        private BackgroundWorker BackgroundWorker { get; set;}
         private ulong UploadItemId { get; set; }
         private bool SubmissionFinished { get; set; }
         private bool SubmissionSuccessful { get; set; }
@@ -48,6 +47,11 @@ namespace HSModLoader.App.Publishing
             this.FileWatcher.Changed += OnFilesChanged;
             this.FileWatcher.Renamed += OnFilesChanged;
             this.FileWatcher.Deleted += OnFilesChanged;
+
+            this.BackgroundWorker = new BackgroundWorker();
+            this.BackgroundWorker.DoWork += PublishSteamMod;
+            this.BackgroundWorker.RunWorkerCompleted += OnPublishSteamModComplete;
+            this.BackgroundWorker.WorkerSupportsCancellation = true;
 
             this.DataContext = this.CurrentModContext;
         }
@@ -270,10 +274,13 @@ namespace HSModLoader.App.Publishing
                 else
                 {
                     this.ShowProgressOverlay(true);
-                    var background = new BackgroundWorker();
-                    background.DoWork += PublishSteamMod;
-                    background.RunWorkerCompleted += OnPublishSteamModComplete;
-                    background.RunWorkerAsync();
+                    
+                    while(this.BackgroundWorker.IsBusy)
+                    {
+                        this.BackgroundWorker.CancelAsync();
+                    }
+
+                    this.BackgroundWorker.RunWorkerAsync();
                 }
             }
             else
@@ -435,6 +442,8 @@ namespace HSModLoader.App.Publishing
                 {
                     this.ShowPopupMessage("Error", ex.Message, false);
                 });
+
+                SteamAPI.Shutdown();
             }
         }
 
@@ -495,5 +504,19 @@ namespace HSModLoader.App.Publishing
             }
         }
 
+        private void OnWindowClosing(object sender, CancelEventArgs e)
+        {
+            SteamAPI.Shutdown();
+
+            while(this.BackgroundWorker.IsBusy)
+            {
+                if (!this.BackgroundWorker.CancellationPending)
+                {
+                    this.BackgroundWorker.CancelAsync();
+                }
+
+                Thread.Sleep(1000);
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
+        Closing="OnWindowClosing"
         Icon="pack://application:,,,/HSModLoader.App.Publishing;component/Resources/WindowIcon-PublishingTool.ico"
         Title="Himeko Sutori Mod Publishing Tool" 
         Height="650" 
