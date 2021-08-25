@@ -123,7 +123,7 @@ namespace HSModLoader
 
                     if(string.IsNullOrEmpty(m.GameFolderPath))
                     {
-                        throw new ModException("File config.json exists, but has a null value for game folder path.");
+                        throw new ModException("config.json was loaded with no value for game folder path!");
                     }
 
                     // Instantiate mod configurations from the mod manager's

@@ -18,7 +18,14 @@ if(-not (Test-Path "$Target\lib"))
 
 rm "$Target\lib\*.dll"
 mv "$Target\*.dll" "$Target\lib\"
-cp "$Target\..\..\steam_api64.dll" "$Target\lib\steam_api64.dll"
+
+if(test-path "$Target\..\..\steam_api64.dll"){
+    cp "$Target\..\..\steam_api64.dll" "$Target\lib\steam_api64.dll"
+}
+elseif(test-path "$Target\..\..\..\steam_api64.dll")
+{
+    cp "$Target\..\..\..\steam_api64.dll" "$Target\lib\steam_api64.dll"
+}
 
 # Remove culture folders
 ls "$Target\*-*" | % {
