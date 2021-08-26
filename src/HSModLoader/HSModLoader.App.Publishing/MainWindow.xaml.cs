@@ -60,6 +60,7 @@ namespace HSModLoader.App.Publishing
             this.DataContext = this.ModContext;
         }
 
+        #region Overlay
         private void ShowOverlay(bool show)
         {
             Dispatcher.Invoke(() =>
@@ -105,6 +106,7 @@ namespace HSModLoader.App.Publishing
                 }
             });
         }
+        #endregion
 
         private void RefreshFiles()
         {

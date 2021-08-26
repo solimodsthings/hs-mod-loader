@@ -69,7 +69,7 @@ namespace HSModLoader
             {
                 this.GameFolderPath = path;
                 this.InitializeGameModsFolder();
-                this.ScanForUnmanagedStandaloneMods();
+                this.ScanForMods();
                 result.IsSuccessful = true;
             }
             else
@@ -151,8 +151,7 @@ namespace HSModLoader
 
                     // Attempt to instantiate mod configurations from the mods
                     // folder.
-                    this.ScanForUnmanagedStandaloneMods();
-                    this.ScanForSteamWorkshopMods();
+                    this.ScanForMods();
                     
                     result.IsSuccessful = true;
 
@@ -177,6 +176,12 @@ namespace HSModLoader
 
             return result;
 
+        }
+
+        private void ScanForMods()
+        {
+            this.ScanForUnmanagedStandaloneMods();
+            this.ScanForSteamWorkshopMods();
         }
 
         private void ScanForUnmanagedStandaloneMods()
