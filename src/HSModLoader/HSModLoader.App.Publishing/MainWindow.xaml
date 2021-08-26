@@ -119,7 +119,7 @@
                     <TextBox Grid.Row="6" Grid.Column="2" Margin="0,4,0,4" AcceptsReturn="True" AcceptsTab="True" TextWrapping="WrapWithOverflow"  Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
 
                     <Label Grid.Row="7" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
-                    <TextBox Grid.Row="7" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=Id}"></TextBox>
+                    <TextBox Grid.Row="7" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=ModId}"></TextBox>
 
                     <Label  Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
                     <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>

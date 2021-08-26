@@ -51,7 +51,7 @@ namespace HSModLoader.App.Publishing
             }
         }
 
-        public string Id
+        public string ModId
         {
             get
             {
@@ -59,7 +59,7 @@ namespace HSModLoader.App.Publishing
             }
             set
             {
-                Mod.Id= value;
+                Mod.Id = value;
                 NotifyPropertyChangedEventHandlers();
             }
         }

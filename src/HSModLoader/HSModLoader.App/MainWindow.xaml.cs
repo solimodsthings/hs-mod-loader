@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using HSModLoader;
+using HSModLoader.WpfControls;
 using Microsoft.Win32;
 
 namespace HSModLoader.App

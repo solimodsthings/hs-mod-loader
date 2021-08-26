@@ -293,12 +293,14 @@ namespace HSModLoader.App.Publishing
 
         private void OnPublishButtonClick(object sender, RoutedEventArgs e)
         {
-
+            
             if (this.ModContext.Mod == null)
             {
                 this.ShowPopupMessage("Warning", "There is no active mod to publish. Please open a mod first.");
                 return;
             }
+
+            var mod = this.ModContext.Mod;
 
             // The constraint on Description is a requirement for Steam only, but we might
             // as well enforce it for standalone mods too
@@ -307,8 +309,26 @@ namespace HSModLoader.App.Publishing
                 this.ShowPopupMessage("Warning", "Cannot publish a mod with a missing name or description.");
                 return;
             }
-            
+
+            if (string.IsNullOrEmpty(this.ModContext.Author) || string.IsNullOrEmpty(this.ModContext.Description))
+            {
+                this.ShowPopupMessage("Warning", "You must provide an author's name for this mod before publishing.");
+                return;
+            }
+
             this.ShowOverlay(true);
+
+            if (string.IsNullOrEmpty(mod.Id))
+            {
+                this.ModContext.ModId = string.Format(
+                    "{0}-{1}",
+                    mod.Author.Replace(" ", string.Empty),
+                    mod.Name.Replace(" ", string.Empty)
+                );
+
+                this.Save();
+            }
+
             var publish = new PublishingWindow() { Owner = this };
             var result = publish.ShowDialog();
 
@@ -370,18 +390,8 @@ namespace HSModLoader.App.Publishing
                     return;
                 }
 
-                if (string.IsNullOrEmpty(mod.Id))
-                {
-                    mod.Id = string.Format(
-                        "{0}-{1}",
-                        mod.Author.Replace(" ", string.Empty),
-                        mod.Name.Replace(" ", string.Empty)
-                    );
-                    this.Save();
-                }
-
                 var save = new VistaSaveFileDialog();
-                save.InitialDirectory = new DirectoryInfo(this.ModContext.Directory).Parent.FullName;
+                save.InitialDirectory = Directory.GetCurrentDirectory() + "\\";
                 save.CheckPathExists = true;
                 save.OverwritePrompt = true;
                 save.FileName = this.ModContext.Mod.Id + ".hsmod";
