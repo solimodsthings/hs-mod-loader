@@ -69,7 +69,8 @@ namespace HSModLoader
             {
                 this.GameFolderPath = path;
                 this.InitializeGameModsFolder();
-                this.ScanForMods();
+                this.ScanStandaloneMods();
+                this.ScanSteamWorkshopMods();
                 result.IsSuccessful = true;
             }
             else
@@ -104,7 +105,8 @@ namespace HSModLoader
 
         /// <summary>
         /// Deserializes this ModManager from disk. Also checks the
-        /// mods folder for any new mod packages.
+        /// mods folder and subscribed steam mods folder for new mods or
+        /// mods that have been removed.
         /// </summary>
         public Result Load()
         {
@@ -116,6 +118,7 @@ namespace HSModLoader
 
                 try
                 {
+                    bool missingStandaloneModFolders = false;
                     var m = JsonSerializer.Deserialize<ModManager>(json);
 
                     this.ModConfigurations = m.ModConfigurations;
@@ -123,38 +126,55 @@ namespace HSModLoader
 
                     if(string.IsNullOrEmpty(m.GameFolderPath))
                     {
-                        throw new ModException("config.json was loaded with no value for game folder path!");
+                        throw new ModException("Cannot load any mods. File 'config.json' was loaded with no value for game folder path. ");
                     }
 
-                    // Instantiate mod configurations from the mod manager's
-                    // json file.
-                    foreach(var configuration in this.ModConfigurations)
+                    // Instantiate mod configurations from the mod manager's json file.
+                    foreach (var configuration in this.ModConfigurations)
                     {
-
-                        if(!Directory.Exists(configuration.ModStorageFolder))
+                        if (!Directory.Exists(configuration.ModStorageFolder))
                         {
-                            throw new ModException("The storage folder for a previously managed mod no longer exists.");
+                            if (configuration.RegistrationType == RegistrationType.Standalone)
+                            {
+                                // A missing standalone mod will be unregistered through an upcoming call to ScanForMods()
+                                missingStandaloneModFolders = true;
+
+                                var assumedModName = new DirectoryInfo(configuration.ModStorageFolder).Name;
+                                var shortMessage = string.Format("Standalone mod '{0}' cannot be loaded because its storage folder longer exists.", assumedModName);
+                                var longMessage = string.Format("{0} It will be unregistered from this application. It's storage location was originally {1}.", shortMessage, configuration.ModStorageFolder);
+
+                                result.ErrorMessage += " " + shortMessage;
+                                ErrorLogExtensions.AppendToLogFile(longMessage);
+
+                            }
+                            else if(configuration.RegistrationType == RegistrationType.SteamWorkshopItem)
+                            {
+                                // Pass through. It's possible the Steam mod folder doesn't exist anymore because the
+                                // player simply unsubscribed from the mod. In that case, we don't raise any errors.
+                                // The mod will be unregistered through the upcoming call to ScanForMods()
+                            }
+                        }
+                        else
+                        {
+                            var modinfo = Path.Combine(configuration.ModStorageFolder, Mod.InfoFile);
+
+                            if (!File.Exists(modinfo))
+                            {
+                                throw new ModException(string.Format("Registered mod '{0}' is missing its mod.json file. Expected the file to exist at {1}.", configuration.Mod?.Name, modinfo));
+                            }
+
+                            var contents = File.ReadAllText(modinfo);
+                            configuration.Mod = JsonSerializer.Deserialize<Mod>(contents);
+                            configuration.IsManaged = true;
                         }
 
-                        var modinfo = Path.Combine(configuration.ModStorageFolder, Mod.InfoFile);
-
-                        if(!File.Exists(modinfo))
-                        {
-                            throw new ModException(string.Format("A registered mod is missing its mod.json file. Expected the file to exist at {0}.", modinfo));
-                        }
-
-                        var contents = File.ReadAllText(modinfo);
-                        configuration.Mod = JsonSerializer.Deserialize<Mod>(contents);
-                        configuration.IsManaged = true;
                     }
 
+                    result.ErrorMessage = result.ErrorMessage?.Trim();
+                    result.IsSuccessful = !missingStandaloneModFolders;
 
-                    // Attempt to instantiate mod configurations from the mods
-                    // folder.
-                    this.ScanForMods();
-                    
-                    result.IsSuccessful = true;
-
+                    this.ScanStandaloneMods();
+                    this.ScanSteamWorkshopMods();
                 }
                 catch(ModException e)
                 {
@@ -178,21 +198,21 @@ namespace HSModLoader
 
         }
 
-        private void ScanForMods()
-        {
-            this.ScanForUnmanagedStandaloneMods();
-            this.ScanForSteamWorkshopMods();
-        }
-
-        private void ScanForUnmanagedStandaloneMods()
+        /// <summary>
+        /// Checks the standalone mods folder to see if any new mods
+        /// were added directly to the folder (in which case we'll try to
+        /// register them) and if any previously registered mods are missing
+        /// (in which we'll unregister them).
+        /// </summary>
+        private void ScanStandaloneMods()
         {
             var modsFolder = Path.Combine(this.GameFolderPath, GameModsFolder);
 
-            // Note: It is a valid scenario for the mods folder to have been created yet.
             if (Directory.Exists(modsFolder))
             {
                 var subfolders = Directory.GetDirectories(modsFolder);
 
+                // Look for new mods
                 foreach (var unmanagedSubfolder in subfolders)
                 {
                     var modinfo = Path.Combine(unmanagedSubfolder, Mod.InfoFile);
@@ -210,11 +230,31 @@ namespace HSModLoader
                         }
                     }
                 }
+
+                // Look for mods were previously registered, but don't exist anymore
+                var managedStandaloneMods = this.ModConfigurations.Where(x => x.RegistrationType == RegistrationType.Standalone).ToArray();
+
+                foreach (var managedStandaloneMod in managedStandaloneMods)
+                {
+                    if (string.IsNullOrEmpty(managedStandaloneMod.ModStorageFolder) || !Directory.Exists(managedStandaloneMod.ModStorageFolder))
+                    {
+                        this.UnregisterMod(managedStandaloneMod);
+                    }
+                }
             } 
+            else
+            {
+                // It is a valid scenario for the mods folder to not have been created yet.
+            }
         }
 
-        
-        private void ScanForSteamWorkshopMods()
+        /// <summary>
+        /// Checks the Steam workshop mods folder to see if any new mods
+        /// have been subscribed to (so they can be registered)
+        /// and if any previously registered Steam mods have been
+        /// unsubscribed (so we can unregister them).
+        /// </summary>
+        private void ScanSteamWorkshopMods()
         {
             var steamModsFolder = Path.Combine(this.GameFolderPath, SteamModsFolder);
 
@@ -234,7 +274,7 @@ namespace HSModLoader
 
                         if (!this.IsRegistered(mod))
                         {
-                            var newConfiguration = this.RegisterSteamMod(mod, subfolder);                            
+                            var newConfiguration = this.RegisterSteamMod(mod, subfolder);
                             newConfiguration.State = this.AssessFileState(newConfiguration);
                             newConfiguration.IsManaged = false;
                         }
@@ -243,7 +283,7 @@ namespace HSModLoader
             }
 
             /// Handle mods being unsubscribed to as well
-            var managedSteamMods = this.ModConfigurations.Where(x => x.RegistrationType == RegistrationType.SteamWorkshopItem);
+            var managedSteamMods = this.ModConfigurations.Where(x => x.RegistrationType == RegistrationType.SteamWorkshopItem).ToArray();
 
             foreach (var managedSteamMod in managedSteamMods)
             {
@@ -469,13 +509,19 @@ namespace HSModLoader
         /// </summary>
         private bool IsRegistered(Mod newMod)
         {
-            foreach (var mod in ModConfigurations.Select(x => x.Mod))
+            if (newMod != null)
             {
-                if (string.Equals(mod.Id, newMod.Id, StringComparison.OrdinalIgnoreCase) 
-                    || (string.Equals(mod.Name, newMod.Name, StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(mod.Version, newMod.Version, StringComparison.OrdinalIgnoreCase)))
+                foreach (var mod in ModConfigurations.Select(x => x.Mod))
                 {
-                    return true;
+                    if (mod != null)
+                    {
+                        if (string.Equals(mod.Id, newMod.Id, StringComparison.OrdinalIgnoreCase)
+                            || (string.Equals(mod.Name, newMod.Name, StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(mod.Version, newMod.Version, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
 
@@ -767,7 +813,7 @@ namespace HSModLoader
                 gameEngineConfig.Exclude(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
                 
                 result.IsSuccessful = true;
-                this.FileChangesLog.Record("RPGTacMods.ini will be updated to *not* include paths for mod '{0}' for folder '{1}'", configuration.Mod.Id, configuration.ModStorageFolder);
+                this.FileChangesLog.Record("RPGTacMods.ini will be updated to *not* include paths for mod '{0}' for folder '{1}'", configuration.Mod?.Id, configuration.ModStorageFolder);
             }
             catch(ModException e)
             {
@@ -778,7 +824,7 @@ namespace HSModLoader
             catch(Exception e)
             {
                 e.AppendToLogFile();
-                result.ErrorMessage = string.Format("Could not disable mod {0}.", configuration.Mod.Id);
+                result.ErrorMessage = string.Format("Could not disable mod {0}.", configuration.Mod?.Id);
                 this.FileChangesLog.Record(result.ErrorMessage);
             }
 

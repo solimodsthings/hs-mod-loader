@@ -19,5 +19,10 @@ namespace HSModLoader
             File.AppendAllText(ErrorLog, string.Format("\n\n[{0}]\n{1}\n{2}", DateTime.Now.ToString(), e.Message, e.StackTrace));
         }
 
+        public static void AppendToLogFile(string s)
+        {
+            File.AppendAllText(ErrorLog, string.Format("\n\n[{0}]\n{1}", DateTime.Now.ToString(), s));
+        }
+
     }
 }
