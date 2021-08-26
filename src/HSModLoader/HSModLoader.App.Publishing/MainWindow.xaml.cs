@@ -1,4 +1,5 @@
-﻿using Ookii.Dialogs.WinForms;
+﻿using HSModLoader.WpfControls;
+using Ookii.Dialogs.WinForms;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -31,31 +32,33 @@ namespace HSModLoader.App.Publishing
     public partial class MainWindow : Window
     {
 
-        private ModContext CurrentModContext { get; set; }
-        private FileSystemWatcher FileWatcher { get; set; }
-        private BackgroundWorker BackgroundWorker { get; set;}
-        private ulong UploadItemId { get; set; }
-        private bool SubmissionFinished { get; set; }
-        private bool SubmissionSuccessful { get; set; }
+        private static readonly string DefaultAppIdFile = "steam_appid.txt";
+        private static readonly int DefaultAppId = 669500;
+
+        private ModContext ModContext { get; set; }
+        private FileSystemWatcher ModDirectoryWatcher { get; set; }
+        private BackgroundWorker SteamApiThread { get; set;}
+        private ulong SteamUploadItemId { get; set; }
+        private bool SteamSubmissionFinished { get; set; }
+        private bool SteamSubmissionSuccessful { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            this.CurrentModContext = new ModContext();
-            this.FileWatcher = new FileSystemWatcher();
-            this.FileWatcher.Created += OnFilesChanged;
-            this.FileWatcher.Changed += OnFilesChanged;
-            this.FileWatcher.Renamed += OnFilesChanged;
-            this.FileWatcher.Deleted += OnFilesChanged;
+            this.ModContext = new ModContext();
+            this.ModDirectoryWatcher = new FileSystemWatcher();
+            this.ModDirectoryWatcher.Created += OnFilesChanged;
+            this.ModDirectoryWatcher.Changed += OnFilesChanged;
+            this.ModDirectoryWatcher.Renamed += OnFilesChanged;
+            this.ModDirectoryWatcher.Deleted += OnFilesChanged;
 
-            this.BackgroundWorker = new BackgroundWorker();
-            this.BackgroundWorker.DoWork += PublishSteamMod;
-            this.BackgroundWorker.RunWorkerCompleted += OnPublishSteamModComplete;
-            this.BackgroundWorker.WorkerSupportsCancellation = true;
+            this.SteamApiThread = new BackgroundWorker();
+            this.SteamApiThread.DoWork += PublishSteamMod;
+            this.SteamApiThread.RunWorkerCompleted += OnPublishSteamModComplete;
+            this.SteamApiThread.WorkerSupportsCancellation = true;
 
-            this.DataContext = this.CurrentModContext;
+            this.DataContext = this.ModContext;
         }
-
 
         private void ShowOverlay(bool show)
         {
@@ -86,6 +89,22 @@ namespace HSModLoader.App.Publishing
                 }
             });
         }
+        private void ShowProgressMessage(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                this.TextboxProgress.Text = message;
+
+                if (string.IsNullOrEmpty(message))
+                {
+                    this.TextboxProgress.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    this.TextboxProgress.Visibility = Visibility.Visible;
+                }
+            });
+        }
 
         private void RefreshFiles()
         {
@@ -93,19 +112,19 @@ namespace HSModLoader.App.Publishing
             {
                 this.ListViewFiles.Items.Clear();
 
-                if (this.CurrentModContext.Mod == null)
+                if (this.ModContext.Mod == null)
                 {
                     this.InfoPanel.IsEnabled = false;
                     this.FileListPanel.IsEnabled = false;
-                    this.FileWatcher.EnableRaisingEvents = false;
+                    this.ModDirectoryWatcher.EnableRaisingEvents = false;
                 }
                 else
                 {
                     this.InfoPanel.IsEnabled = true;
                     this.FileListPanel.IsEnabled = true;
-                    this.FileWatcher.EnableRaisingEvents = true;
+                    this.ModDirectoryWatcher.EnableRaisingEvents = true;
 
-                    var files = Directory.GetFiles(this.CurrentModContext.Directory).Select(x => new FileView(x));
+                    var files = Directory.GetFiles(this.ModContext.Directory).Select(x => new FileView(x));
 
                     foreach (var file in files)
                     {
@@ -116,7 +135,7 @@ namespace HSModLoader.App.Publishing
             });
         }
 
-        private void ShowPopupMessage(string header, string body, bool useOverlay = true)
+        public void ShowPopupMessage(string header, string body, bool useOverlay = true)
         {
 
             Dispatcher.Invoke(() =>
@@ -142,11 +161,11 @@ namespace HSModLoader.App.Publishing
 
         private void Save()
         {
-            var mod = this.CurrentModContext.Mod;
+            var mod = this.ModContext.Mod;
             if (mod != null)
             {
                 var json = JsonSerializer.Serialize(mod, new JsonSerializerOptions() { WriteIndented = true });
-                var path = System.IO.Path.Combine(this.CurrentModContext.Directory, Mod.InfoFile);
+                var path = System.IO.Path.Combine(this.ModContext.Directory, Mod.InfoFile);
                 File.WriteAllText(path, json);
             }
         }
@@ -155,13 +174,40 @@ namespace HSModLoader.App.Publishing
         {
             this.ShowOverlay(true);
 
-            var creation = new NewModWindow() { Owner = this };;
+            var creation = new NewModWindow() { Owner = this };
             var result = creation.ShowDialog();
+            var noEncounteredIssues = true;
 
             if(result == true)
             {
-                this.SetCurrentMod(creation.ResultMod, creation.ResultDirectory);
-                this.Save();
+
+                if (!Directory.Exists(creation.ResultModParentFolder))
+                {
+                    this.ShowPopupMessage("Warning", "Cannot create mod. The specified parent folder where the mod is to be created inside does not exist.");
+                    noEncounteredIssues = false;
+                }
+
+                var modFolder = System.IO.Path.Combine(creation.ResultModParentFolder, creation.ResultMod.Name);
+
+                if(noEncounteredIssues)
+                {
+                    if (Directory.Exists(modFolder))
+                    {
+                        this.ShowPopupMessage("Warning", "Cannot create mod. The desired combination of mod name and parent directory is already used by an existing mod.");
+                        noEncounteredIssues = false;
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(modFolder);
+                    }
+                }
+
+                if(noEncounteredIssues)
+                {
+                    this.SetCurrentMod(creation.ResultMod, modFolder);
+                    this.Save();
+                }
+                
             }
 
             this.ShowOverlay(false);
@@ -169,7 +215,7 @@ namespace HSModLoader.App.Publishing
 
         private void OnOpenModButtonClick(object sender, RoutedEventArgs e)
         {
-            if(this.CurrentModContext.Mod != null)
+            if(this.ModContext.Mod != null)
             {
                 // TODO Prompt user if they actually want to save before opening another mod package folder
                 this.Save();
@@ -177,8 +223,9 @@ namespace HSModLoader.App.Publishing
 
             var folder = new VistaFolderBrowserDialog();
 
+            folder.RootFolder = Environment.SpecialFolder.Desktop;
+            folder.SelectedPath = Directory.GetCurrentDirectory() + "\\"; // The extra backslash makes it is so we start inside the folder
             folder.ShowNewFolderButton = true;
-            folder.RootFolder = Environment.SpecialFolder.MyComputer;
 
             var result = folder.ShowDialog();
 
@@ -217,9 +264,9 @@ namespace HSModLoader.App.Publishing
 
         private void SetCurrentMod(Mod mod, string directory)
         {
-            this.CurrentModContext.Mod = mod;
-            this.CurrentModContext.Directory = directory;
-            this.FileWatcher.Path = directory;
+            this.ModContext.Mod = mod;
+            this.ModContext.Directory = directory;
+            this.ModDirectoryWatcher.Path = directory;
             this.RefreshFiles();
         }
 
@@ -240,18 +287,27 @@ namespace HSModLoader.App.Publishing
             Process.Start(new ProcessStartInfo()
             {
                 FileName = "explorer.exe",
-                Arguments = this.CurrentModContext.Directory
+                Arguments = this.ModContext.Directory
             });
         }
 
         private void OnPublishButtonClick(object sender, RoutedEventArgs e)
         {
 
-            if (this.CurrentModContext.Mod == null)
+            if (this.ModContext.Mod == null)
             {
+                this.ShowPopupMessage("Warning", "There is no active mod to publish. Please open a mod first.");
                 return;
             }
 
+            // The constraint on Description is a requirement for Steam only, but we might
+            // as well enforce it for standalone mods too
+            if (string.IsNullOrEmpty(this.ModContext.Name) || string.IsNullOrEmpty(this.ModContext.Description))
+            {
+                this.ShowPopupMessage("Warning", "Cannot publish a mod with a missing name or description.");
+                return;
+            }
+            
             this.ShowOverlay(true);
             var publish = new PublishingWindow() { Owner = this };
             var result = publish.ShowDialog();
@@ -274,13 +330,24 @@ namespace HSModLoader.App.Publishing
                 else
                 {
                     this.ShowProgressOverlay(true);
-                    
-                    while(this.BackgroundWorker.IsBusy)
+
+                    // It's a requirement for the Steam API that this
+                    // file exists in the application directory
+                    if (!File.Exists(DefaultAppIdFile))
                     {
-                        this.BackgroundWorker.CancelAsync();
+                        File.WriteAllText(DefaultAppIdFile, DefaultAppId.ToString());
                     }
 
-                    this.BackgroundWorker.RunWorkerAsync();
+                    while(this.SteamApiThread.IsBusy)
+                    {
+                        if(!this.SteamApiThread.CancellationPending)
+                        {
+                            this.SteamApiThread.CancelAsync();
+                        }
+                        Thread.Sleep(1000);
+                    }
+
+                    this.SteamApiThread.RunWorkerAsync();
                 }
             }
             else
@@ -296,7 +363,7 @@ namespace HSModLoader.App.Publishing
 
             try
             {
-                var mod = this.CurrentModContext.Mod;
+                var mod = this.ModContext.Mod;
 
                 if (mod == null)
                 {
@@ -314,10 +381,10 @@ namespace HSModLoader.App.Publishing
                 }
 
                 var save = new VistaSaveFileDialog();
-                save.InitialDirectory = new DirectoryInfo(this.CurrentModContext.Directory).Parent.FullName;
+                save.InitialDirectory = new DirectoryInfo(this.ModContext.Directory).Parent.FullName;
                 save.CheckPathExists = true;
                 save.OverwritePrompt = true;
-                save.FileName = this.CurrentModContext.Mod.Id + ".hsmod";
+                save.FileName = this.ModContext.Mod.Id + ".hsmod";
 
                 var result = save.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -329,7 +396,7 @@ namespace HSModLoader.App.Publishing
                         File.Delete(path);
                     }
 
-                    ZipFile.CreateFromDirectory(this.CurrentModContext.Directory, path);
+                    ZipFile.CreateFromDirectory(this.ModContext.Directory, path);
                 }
             }
             catch (Exception ex)
@@ -343,25 +410,25 @@ namespace HSModLoader.App.Publishing
         {
             try
             {
-                var mod = this.CurrentModContext.Mod;
+                var mod = this.ModContext.Mod;
+                var isExistingSteamWorkshopItem = mod.SteamWorkshopId.HasValue;
 
-                bool isNewItem = false;
-                this.UploadItemId = 0;
-                this.SubmissionFinished = false;
-                this.SubmissionSuccessful = false;
+                this.SteamUploadItemId = 0;
+                this.SteamSubmissionFinished = false;
+                this.SteamSubmissionSuccessful = false;
 
-                if (mod.SteamWorkshopId.HasValue)
+                if (isExistingSteamWorkshopItem)
                 {
-                    this.UploadItemId = mod.SteamWorkshopId.Value;
+                    this.SteamUploadItemId = mod.SteamWorkshopId.Value;
                 }
 
                 this.ShowProgressMessage("Accessing Steam");
 
                 if (SteamAPI.Init())
                 {
-                    var appId = new AppId_t((uint)669500);
+                    var appId = new AppId_t((uint)DefaultAppId);
 
-                    if (UploadItemId == 0)
+                    if (!isExistingSteamWorkshopItem)
                     {
 
                         this.ShowProgressMessage("Creating new Steam Workshop item");
@@ -370,29 +437,28 @@ namespace HSModLoader.App.Publishing
                         var createResult = CallResult<CreateItemResult_t>.Create(OnSteamWorkshopItemCreation);
                         createResult.Set(createItemCall);
 
-                        while (UploadItemId == 0)
+                        while (SteamUploadItemId == 0 && !this.SteamApiThread.CancellationPending)
                         {
                             SteamAPI.RunCallbacks();
                             Thread.Sleep(1000);
                         }
 
-                        this.CurrentModContext.Mod.SteamWorkshopId = UploadItemId;
-                        this.CurrentModContext.SteamId = UploadItemId.ToString();
-                        isNewItem = true;
+                        this.ModContext.Mod.SteamWorkshopId = SteamUploadItemId;
+                        this.ModContext.SteamId = SteamUploadItemId.ToString();
                     }
 
                     this.ShowProgressMessage("Updating Steam Workshop item");
 
-                    var updateHandle = SteamUGC.StartItemUpdate(appId, new PublishedFileId_t(UploadItemId));
+                    var updateHandle = SteamUGC.StartItemUpdate(appId, new PublishedFileId_t(SteamUploadItemId));
 
-                    if(isNewItem)
+                    if(!isExistingSteamWorkshopItem)
                     {
                         SteamUGC.SetItemTitle(updateHandle, mod.Name);
                         SteamUGC.SetItemDescription(updateHandle, mod.Description);
                         SteamUGC.SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility.k_ERemoteStoragePublishedFileVisibilityPublic);
                     }
                     
-                    SteamUGC.SetItemContent(updateHandle, this.CurrentModContext.Directory);
+                    SteamUGC.SetItemContent(updateHandle, this.ModContext.Directory);
 
                     var submitItemCall = SteamUGC.SubmitItemUpdate(updateHandle, "Updated on " + DateTime.Now.ToString());
                     var submitResult = CallResult<SubmitItemUpdateResult_t>.Create(OnSteamWorkshopItemSubmission);
@@ -400,7 +466,7 @@ namespace HSModLoader.App.Publishing
 
                     this.ShowProgressMessage("Uploading mod files");
 
-                    while (!SubmissionFinished)
+                    while (!SteamSubmissionFinished && !this.SteamApiThread.CancellationPending)
                     {
                         SteamAPI.RunCallbacks();
 
@@ -412,34 +478,43 @@ namespace HSModLoader.App.Publishing
                     }
 
                     SteamAPI.Shutdown();
-                    this.ShowProgressMessage(string.Empty);
+                    this.Save();
 
                     Dispatcher.Invoke(() =>
                     {
-                        this.Save();
+                        this.ShowProgressMessage(string.Empty);
                         this.ShowProgressOverlay(false);
 
-                        if(this.SubmissionSuccessful)
+                        if(this.SteamSubmissionSuccessful)
                         {
-                            if (isNewItem)
-                            {
-                                this.ShowPopupMessage("Success", "Successfully uploaded your mod as a new Steam Workshop item!"
-                                    + " Visit your new workshop item in Steam to add screenshots.", false);
-                            }
-                            else
+                            if (isExistingSteamWorkshopItem)
                             {
                                 this.ShowPopupMessage("Success", "Successfully updated the Steam Workshop item for this mod!"
                                     + " Visit your workshop item in Steam to edit your change notes.", false);
                             }
+                            else
+                            {
+                                this.ShowPopupMessage("Success", "Successfully uploaded your mod as a new Steam Workshop item!"
+                                    + " Visit your new workshop item in Steam to add screenshots.", false);
+                            }
                         }
                     });
                     
+                }
+                else
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        this.ShowProgressOverlay(false);
+                        this.ShowPopupMessage("Warning", "Steam must be running in order to publish mods to the Steam Workshop.");
+                    });
                 }
             }
             catch (Exception ex)
             {
                 Dispatcher.Invoke(() =>
                 {
+                    this.ShowProgressOverlay(false);
                     this.ShowPopupMessage("Error", ex.Message, false);
                 });
 
@@ -447,22 +522,6 @@ namespace HSModLoader.App.Publishing
             }
         }
 
-        private void ShowProgressMessage(string message)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                this.TextboxProgress.Text = message;
-                
-                if (string.IsNullOrEmpty(message))
-                {
-                    this.TextboxProgress.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    this.TextboxProgress.Visibility = Visibility.Visible;
-                }
-            });
-        }
 
         private void OnPublishSteamModComplete(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -478,7 +537,7 @@ namespace HSModLoader.App.Publishing
         {
             if (result.m_eResult == EResult.k_EResultOK)
             {
-                this.UploadItemId = ulong.Parse(result.m_nPublishedFileId.ToString());
+                this.SteamUploadItemId = ulong.Parse(result.m_nPublishedFileId.ToString());
             }
             else
             {
@@ -490,16 +549,16 @@ namespace HSModLoader.App.Publishing
         private void OnSteamWorkshopItemSubmission(SubmitItemUpdateResult_t result, bool failure)
         {
 
-            this.SubmissionFinished = true;
+            this.SteamSubmissionFinished = true;
 
             if (result.m_eResult == EResult.k_EResultOK)
             {
-                this.SubmissionSuccessful = true;
+                this.SteamSubmissionSuccessful = true;
             }
             else
             {
                 this.ShowPopupMessage("Error", 
-                    string.Format("Failed to upload mod files to the Steam Workshop. There either does not exist a workshop item with ID {0} or you don't have permissions to update it.", this.CurrentModContext.SteamId), false);
+                    string.Format("Failed to upload mod files to the Steam Workshop. There either does not exist a workshop item with ID {0} or you don't have permissions to update it.", this.ModContext.SteamId), false);
                 this.OnPublishSteamModComplete(null, null);
             }
         }
@@ -508,11 +567,12 @@ namespace HSModLoader.App.Publishing
         {
             SteamAPI.Shutdown();
 
-            while(this.BackgroundWorker.IsBusy)
+            while(this.SteamApiThread.IsBusy)
             {
-                if (!this.BackgroundWorker.CancellationPending)
+
+                if (!this.SteamApiThread.CancellationPending)
                 {
-                    this.BackgroundWorker.CancelAsync();
+                    this.SteamApiThread.CancelAsync();
                 }
 
                 Thread.Sleep(1000);

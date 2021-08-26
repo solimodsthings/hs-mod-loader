@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -25,8 +26,10 @@ namespace HSModLoader.App.Publishing
     {
         private static readonly string PlaceholderModName = "New Mod ";
 
+        public Result Result { get; set; }
+
         public Mod ResultMod { get; set; }
-        public string ResultDirectory { get; set; }
+        public string ResultModParentFolder { get; set; }
 
         public NewModWindow()
         {
@@ -54,9 +57,10 @@ namespace HSModLoader.App.Publishing
         {
             var folder = new VistaFolderBrowserDialog();
 
+            folder.RootFolder = Environment.SpecialFolder.Desktop;
+            folder.SelectedPath = this.TextBoxModLocation.Text + "\\"; // The extra backslash makes it is so we start inside the folder
             folder.ShowNewFolderButton = true;
-            folder.RootFolder = Environment.SpecialFolder.MyComputer;
-
+            
             var result = folder.ShowDialog();
 
             if(result == System.Windows.Forms.DialogResult.OK)
@@ -72,30 +76,22 @@ namespace HSModLoader.App.Publishing
 
             if (string.IsNullOrEmpty(modName) || string.IsNullOrEmpty(parentFolder))
             {
-                // TODO show a warning
+                // Might want to give some UI feedback, but this is ok as the window
+                // won't simply vanish.
                 return;
             }
 
-            if (!Directory.Exists(parentFolder))
-            {
-                // TODO show a warning
-                return;
-            }
-
-            var newFolder = System.IO.Path.Combine(parentFolder, modName);
-
-            if (Directory.Exists(newFolder))
-            {
-                // TODO show a warning
-                return;
-            }
-
-            Directory.CreateDirectory(newFolder);
             this.ResultMod = new Mod() { Name = modName };
-            this.ResultDirectory = newFolder;
+            this.ResultModParentFolder = parentFolder;
             this.DialogResult = true;
             this.Close();
 
+        }
+
+        private void OnCancelButtonClick(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+            this.Close();
         }
     }
 }

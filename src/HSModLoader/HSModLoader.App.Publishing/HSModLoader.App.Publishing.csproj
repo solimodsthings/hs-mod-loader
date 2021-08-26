@@ -94,10 +94,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MessageWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="NewModWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -114,9 +110,6 @@
     <Compile Include="FileView.cs" />
     <Compile Include="PublishingWindow.xaml.cs">
       <DependentUpon>PublishingWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MessageWindow.xaml.cs">
-      <DependentUpon>MessageWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ModContext.cs" />
     <Compile Include="NewModWindow.xaml.cs">
@@ -163,6 +156,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HSModLoader.WpfControls\HSModLoader.WpfControls.csproj">
+      <Project>{4c8dd087-e061-40eb-94e9-92d4ea40abfa}</Project>
+      <Name>HSModLoader.WpfControls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HSModLoader\HSModLoader.csproj">
       <Project>{e21b1996-6502-429b-bd7b-a3542ac26526}</Project>
       <Name>HSModLoader</Name>
@@ -170,9 +167,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Steamworks.NET.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="steam_appid.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
