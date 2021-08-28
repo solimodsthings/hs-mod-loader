@@ -469,6 +469,9 @@ namespace HSModLoader
 
         }
 
+        /// <summary>
+        /// Registers a Steam Workshop mod with this mod manager.
+        /// </summary>
         private ModConfiguration RegisterSteamMod(Mod steamMod, string modLocation)
         {
             if (string.IsNullOrEmpty(steamMod.Id))
@@ -612,6 +615,12 @@ namespace HSModLoader
             return result;
         }
 
+        /// <summary>
+        /// Updates the list of mutators in RPGTacMods.ini based on which mods are enabled,
+        /// soft-disabled, or disabled. Mods use mutator classes as an entry point to their
+        /// scripts. Thus, a mod with a mutator listed in RPGTacMods.ini has scripts running
+        /// during the game.
+        /// </summary>
         private void ApplyModsToMutatorIniFile()
         {
             var mutatorsConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameMutatorConfigurationFile);
@@ -679,7 +688,7 @@ namespace HSModLoader
                     }
                 }
 
-                // Finally, update the mutator list
+                // Finally, append the unmanaged mutators to the list
                 if (unmanagedMutatorClasses.Count > 0)
                 {
                     if (enabledMutatorClasses.Count > 0)
@@ -700,7 +709,8 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Applies changes to files in the game directory.
+        /// Applies changes to files in the game directory to reflect
+        /// the desired state of mods (enabled, disabled, etc).
         /// </summary>
         private Result ApplyChanges()
         {
@@ -714,8 +724,8 @@ namespace HSModLoader
             {
                 configuration.IsManaged = true;
 
-                // A reminder here that soft-disabled mods have scripts disabled, but content files remain enabled
-                // to allow save files to mostly work correctly
+                // A reminder here that the "soft-disabled" state for mods means their scripts won't run,
+                // but content files and script files remain available to allow save files to work correctly
                 if (configuration.State == ModState.Enabled || configuration.State == ModState.SoftDisabled)
                 {
                     this.FileChangesLog.Record("Mod {0} needs to be added to the game directory...", configuration.Mod.Id);
@@ -748,7 +758,9 @@ namespace HSModLoader
             return result;
         }
 
-
+        /// <summary>
+        /// Updates RPGTacEngine.ini and adds paths for the specified mod (configuration).
+        /// </summary>
         private Result EnableModStoragePaths(GameConfiguration gameEngineConfig, ModConfiguration configuration)
         {
             var result = new Result();
@@ -803,6 +815,9 @@ namespace HSModLoader
 
         }
 
+        /// <summary>
+        /// Updates RPGTacEngine.ini and removes paths for the specified mod (configuration).
+        /// </summary>
         private Result DisableModStoragePaths(GameConfiguration gameEngineConfig, ModConfiguration configuration)
         {
             var result = new Result();

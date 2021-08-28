@@ -18,7 +18,11 @@ namespace HSModLoader
         Undetermined
     }
 
-
+    /// <summary>
+    /// The ways a mod can be registered with a mod loader.
+    /// <para><b>Standalone</b>: the mod was an .hsmod file that was manually added to the loader</para>
+    /// <para><b>SteamWorkshopItem</b>: the mod was a Steam Workshop item that was subscribed to</para>
+    /// </summary>
     public enum RegistrationType
     {
         Standalone,

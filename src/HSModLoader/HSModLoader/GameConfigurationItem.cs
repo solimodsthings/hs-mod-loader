@@ -12,7 +12,14 @@ namespace HSModLoader
     /// </summary>
     public class GameConfigurationItem
     {
+        /// <summary>
+        /// The key of a key-value pair. This is what is to the left of the first '=' character.
+        /// </summary>
         public string Key { get; set; }
+
+        /// <summary>
+        /// The value of a key-value pair. This is what is to the right of the first '=' character.
+        /// </summary>
         public string Value { get; set; }
     }
 }

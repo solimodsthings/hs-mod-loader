@@ -5,6 +5,8 @@ using System.Text;
 
 namespace HSModLoader
 {
+    // Convenience class for logging modding events that are not related
+    // to Exceptions and Errors. This one is specific to game file changes.
     public class GameFilesChangeLog
     {
         private string FilePath { get; set; }

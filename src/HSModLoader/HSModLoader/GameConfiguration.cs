@@ -9,12 +9,17 @@ namespace HSModLoader
 {
     /// <summary>
     /// An instance of this class represents a configurable .ini file.
+    /// This class provides methods for reading, modifying, and updating
+    /// .ini files.
     /// </summary>
     public class GameConfiguration
     {
         public string FileName { get; set; }
         public List<GameConfigurationSection> Sections { get; set; }
 
+        /// <param name="filename">
+        /// The path to the .ini file.
+        /// </param>
         public GameConfiguration(string filename)
         {
             this.FileName = filename;
@@ -164,6 +169,10 @@ namespace HSModLoader
             }
         }
 
+        /// <summary>
+        /// Returns a string representation of this GameConfiguration isntance. The string
+        /// has the same structure as an .ini file and is safe to be written to disk.
+        /// </summary>
         public override string ToString()
         {
             var result = new StringBuilder();

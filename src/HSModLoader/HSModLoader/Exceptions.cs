@@ -4,7 +4,11 @@ using System.Text;
 
 namespace HSModLoader
 {
-
+    /// <summary>
+    /// Used for exceptions related to mod management, registration,
+    /// uninstallation, etc. In general, ModException messages are safe to
+    /// display to the user while general Exceptions are not.
+    /// </summary>
     [Serializable]
     public class ModException : Exception
     {
