@@ -41,6 +41,10 @@ namespace HSModLoader.App.Publishing
                 {
                     return "Config";
                 }
+                else if (lower.EndsWith(".jpg"))
+                {
+                    return "Image";
+                }
                 else
                 {
                     return "Other";

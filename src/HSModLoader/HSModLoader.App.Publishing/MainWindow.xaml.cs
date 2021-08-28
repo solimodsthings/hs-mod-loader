@@ -479,6 +479,12 @@ namespace HSModLoader.App.Publishing
                         SteamUGC.SetItemDescription(updateHandle, mod.Description);
                         SteamUGC.SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility.k_ERemoteStoragePublishedFileVisibilityPublic);
                     }
+
+                    var thumbnail = System.IO.Path.Combine(this.ModContext.Directory, "thumbnail.jpg");
+
+                    if (File.Exists(thumbnail)){
+                        SteamUGC.SetItemPreview(updateHandle, thumbnail);
+                    }
                     
                     SteamUGC.SetItemContent(updateHandle, this.ModContext.Directory);
 
