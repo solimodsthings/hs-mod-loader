@@ -69,8 +69,8 @@ namespace HSModLoader
             {
                 this.GameFolderPath = path;
                 this.InitializeGameModsFolder();
-                this.ScanStandaloneMods();
-                this.ScanSteamWorkshopMods();
+                this.AssessStandaloneModsFolder();
+                this.AssessSteamWorkshopModsFolder();
                 result.IsSuccessful = true;
             }
             else
@@ -173,8 +173,8 @@ namespace HSModLoader
                     result.ErrorMessage = result.ErrorMessage?.Trim();
                     result.IsSuccessful = !missingStandaloneModFolders;
 
-                    this.ScanStandaloneMods();
-                    this.ScanSteamWorkshopMods();
+                    this.AssessStandaloneModsFolder();
+                    this.AssessSteamWorkshopModsFolder();
                 }
                 catch(ModException e)
                 {
@@ -199,12 +199,23 @@ namespace HSModLoader
         }
 
         /// <summary>
+        /// Serializes this ModManager and current ModConfigurations to disk.
+        /// </summary>
+        public void Save()
+        {
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(ConfigurationFile, json);
+        }
+
+
+        /// <summary>
         /// Checks the standalone mods folder to see if any new mods
         /// were added directly to the folder (in which case we'll try to
         /// register them) and if any previously registered mods are missing
         /// (in which we'll unregister them).
         /// </summary>
-        private void ScanStandaloneMods()
+        private void AssessStandaloneModsFolder()
         {
             var modsFolder = Path.Combine(this.GameFolderPath, GameModsFolder);
 
@@ -254,7 +265,7 @@ namespace HSModLoader
         /// and if any previously registered Steam mods have been
         /// unsubscribed (so we can unregister them).
         /// </summary>
-        private void ScanSteamWorkshopMods()
+        private void AssessSteamWorkshopModsFolder()
         {
             var steamModsFolder = Path.Combine(this.GameFolderPath, SteamModsFolder);
 
@@ -296,29 +307,50 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Returns a ModState value representing the specified mod's current enabled/disabled state.
+        /// Returns a ModState value representing the specified mod's current enabled/disabled state
+        /// based on if they have paths defined in RPGTacEngine.ini and RPGTacMods.ini.
         /// </summary>
         private ModState AssessFileState(ModConfiguration configuration)
         {
             var mod = configuration.Mod;
+
+            // See if this mod has paths defined in RPGTacEngine.ini...
             var gameEngineConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameEngineConfigurationFile);
             var gameEngineConfig = new GameConfiguration(gameEngineConfigPath);
             gameEngineConfig.Load();
 
             var relativePath = this.GetRelativeModStoragePath(configuration);
-            var hasContentPath = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineContentPathKey, relativePath);
-            var hasLocalizationPath = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
-            var hasScriptsPath = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
+            var hasAllPathsDefined = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineContentPathKey, relativePath)
+                                     && gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath)
+                                     && gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
 
-            if(hasContentPath && hasLocalizationPath && hasScriptsPath)
+            // See if this mod has a mutator defined in RPGTacMods.ini...
+            var mutatorConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameMutatorConfigurationFile);
+            var mutatorConfig = new GameConfiguration(mutatorConfigPath);
+            mutatorConfig.Load();
+
+            var hasMutator = configuration.Mod.HasMutator;
+            var hasMutatorEnabled = false;
+
+            if(configuration.Mod.HasMutator)
+            {
+                var mutators = mutatorConfig.FindItem(MutatorLoaderSection, MutatorLoaderKey)?.Value?.Split(',');
+                if(mutators != null && mutators.Contains(configuration.Mod.MutatorClass))
+                {
+                    hasMutatorEnabled = true;
+                }
+            }
+
+            // Determine the mod's state...
+            if(hasAllPathsDefined && (!hasMutator || hasMutatorEnabled))
             {
                 return ModState.Enabled;
             }
-            else if(hasContentPath && hasLocalizationPath)
+            else if(hasAllPathsDefined && (hasMutator && !hasMutatorEnabled))
             {
                 return ModState.SoftDisabled;
             }
-            else if(!hasContentPath && !hasLocalizationPath && !hasScriptsPath)
+            else if(!hasAllPathsDefined && (!hasMutator || !hasMutatorEnabled))
             {
                 return ModState.Disabled;
             }
@@ -329,15 +361,6 @@ namespace HSModLoader
 
         }
 
-        /// <summary>
-        /// Serializes this ModManager and current ModConfigurations to disk.
-        /// </summary>
-        public void Save()
-        {
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var json = JsonSerializer.Serialize(this, options);
-            File.WriteAllText(ConfigurationFile, json);
-        }
 
         /// <summary>
         /// Registers the mod package file at the specified file path
@@ -574,9 +597,8 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Updates the game folder by adding or removing mod files based on the respective mod's
-        /// state (ie. enabled, soft disabled, or disabled). The method does not modify existing base
-        /// game files except for RPGTacMods.ini which is necessary for any mod that has a mutator class.
+        /// Updates the game folder to reflect each mod's state (ie. enabled, soft disabled, or disabled). 
+        /// The method does not modify existing base game files except for RPGTacMods.ini and RPGTacEngine.ini.
         /// </summary>
         public Result ApplyMods()
         {
@@ -588,12 +610,12 @@ namespace HSModLoader
             try
             {
                 
-                this.ApplyModsToMutatorIniFile();
-                var apply = this.ApplyChanges();
+                this.UpdateMutatorIniFile();
+                var update = this.UpdateGameEngineIniFile();
 
-                if(!apply.IsSuccessful)
+                if(!update.IsSuccessful)
                 {
-                    result.ErrorMessage += apply.ErrorMessage;
+                    result.ErrorMessage += update.ErrorMessage;
                     this.FileChangesLog.Record(result.ErrorMessage);
                 }
                 else
@@ -616,12 +638,12 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Updates the list of mutators in RPGTacMods.ini based on which mods are enabled,
+        /// Updates the list of mutators in RPGTacMods.ini to reflect which mods are enabled,
         /// soft-disabled, or disabled. Mods use mutator classes as an entry point to their
         /// scripts. Thus, a mod with a mutator listed in RPGTacMods.ini has scripts running
         /// during the game.
         /// </summary>
-        private void ApplyModsToMutatorIniFile()
+        private void UpdateMutatorIniFile()
         {
             var mutatorsConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameMutatorConfigurationFile);
             var mutatorsConfig = new GameConfiguration(mutatorsConfigPath);
@@ -709,10 +731,10 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Applies changes to files in the game directory to reflect
-        /// the desired state of mods (enabled, disabled, etc).
+        /// Updates the paths in RPGTacEngine.ini to reflect which mods are enabled,
+        /// soft-disabled, or disabled. 
         /// </summary>
-        private Result ApplyChanges()
+        private Result UpdateGameEngineIniFile()
         {
             var result = new Result() { IsSuccessful = true };
 
@@ -730,12 +752,12 @@ namespace HSModLoader
                 {
                     this.FileChangesLog.Record("Mod {0} needs to be added to the game directory...", configuration.Mod.Id);
 
-                    var install = this.EnableModStoragePaths(gameEngineConfig, configuration);
+                    var enable = this.EnableModStoragePaths(gameEngineConfig, configuration);
 
-                    if(!install.IsSuccessful)
+                    if(!enable.IsSuccessful)
                     {
                         result.IsSuccessful = false;
-                        result.ErrorMessage += install.ErrorMessage;
+                        result.ErrorMessage += enable.ErrorMessage;
                         this.DisableModStoragePaths(gameEngineConfig, configuration); // in case some files managed to be added
                         configuration.State = ModState.Disabled;
                     }
@@ -744,11 +766,11 @@ namespace HSModLoader
                 {
                     this.FileChangesLog.Record("Mod {0} needs to be removed from game directory...", configuration.Mod.Id);
 
-                    var uninstall = this.DisableModStoragePaths(gameEngineConfig, configuration);
-                    if(!uninstall.IsSuccessful)
+                    var disable = this.DisableModStoragePaths(gameEngineConfig, configuration);
+                    if(!disable.IsSuccessful)
                     {
                         result.IsSuccessful = false;
-                        result.ErrorMessage += uninstall.ErrorMessage;
+                        result.ErrorMessage += disable.ErrorMessage;
                     }
                 }
             }
