@@ -769,14 +769,16 @@ namespace HSModLoader
                 gameEngineConfig.Include(GameEnginePathSection, GameEngineContentPathKey, relativePath);
                 gameEngineConfig.Include(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
 
-                if(configuration.State == ModState.Enabled)
+                if(configuration.State == ModState.Enabled || configuration.State == ModState.SoftDisabled)
                 {
                     gameEngineConfig.Include(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
                 }
+                /*
                 else if(configuration.State == ModState.SoftDisabled)
                 {
                     gameEngineConfig.Exclude(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
                 }
+                */
 
                 result.IsSuccessful = true;
                 this.FileChangesLog.Record("RPGTacMods.ini will include paths for mod '{0}' for folder '{1}'", configuration.Mod.Id, configuration.ModStorageFolder);
