@@ -233,6 +233,7 @@ namespace HSModLoader.App.Publishing
 
             if (result == System.Windows.Forms.DialogResult.OK)
             {
+
                 var path = folder.SelectedPath;
                 var modinfo = System.IO.Path.Combine(path, Mod.InfoFile);
 
@@ -248,6 +249,8 @@ namespace HSModLoader.App.Publishing
                     return;
                 }
 
+                this.ShowOverlay(true);
+                this.ShowProgressOverlay(true);
 
                 var json = File.ReadAllText(modinfo);
                 var mod = JsonSerializer.Deserialize<Mod>(json);
@@ -255,11 +258,18 @@ namespace HSModLoader.App.Publishing
                 if(mod == null)
                 {
                     this.ShowPopupMessage("Warning", "Could not deserialize the mod.json file in the selected folder. Could not open mod package.");
-                    return;
+                }
+                else
+                {
+                    this.SetCurrentMod(mod, path);
                 }
 
-                this.SetCurrentMod(mod, path);
                 
+
+                this.ShowProgressOverlay(false);
+                this.ShowOverlay(false);
+                
+
             }
 
         }
