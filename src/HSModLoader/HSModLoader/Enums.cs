@@ -29,4 +29,13 @@ namespace HSModLoader
         SteamWorkshopItem
     }
 
+    /// <summary>
+    /// The different types an <see cref="AutomaticModRegistrationEvent">AutomaticModRegistrationEvent</see> can be.
+    /// </summary>
+    public enum RegistrationAction
+    {
+        Registered,
+        Unregistered
+    }
+
 }
