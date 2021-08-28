@@ -11,7 +11,7 @@ namespace HSModLoader.App
     /// <summary>
     /// Used for displaying mod information in the main window's ordered table of mods.
     /// </summary>
-    public class ModView : INotifyPropertyChanged
+    public class ModViewModel : INotifyPropertyChanged
     {
         public ModConfiguration Configuration { get; private set; }
 
@@ -177,7 +177,7 @@ namespace HSModLoader.App
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ModView(ModConfiguration configuration) 
+        public ModViewModel(ModConfiguration configuration) 
         {
             this.Configuration = configuration;
         }

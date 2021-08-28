@@ -28,16 +28,25 @@ namespace HSModLoader.App
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static double SteamWorkshopMaximumSleepTime = 60; // in seconds
+        private static int SteamWorkshopCreationSleepTime = 250;  // in milliseconds
+        private static int SteamWorkshopDeletionSleepTime = 1000; // in milliseconds
+
         public ModManager Manager { get; set; }
-
-        public ObservableCollection<ModView> ModViews { get; set; }
-        public ModView SelectedMod { get; set; }
-
+        private FileSystemWatcher SteamWorkshopDirectoryWatcher { get; set; }
+        public ObservableCollection<ModViewModel> ModViews { get; set; }
+        public ModViewModel SelectedMod { get; set; }
 
         public MainWindow()
         {
             this.InitializeComponent();
             this.InitializeContextMenuComponent();
+
+            this.SteamWorkshopDirectoryWatcher = new FileSystemWatcher();
+            this.SteamWorkshopDirectoryWatcher.IncludeSubdirectories = true;
+            this.SteamWorkshopDirectoryWatcher.Filter = Mod.InfoFile;
+            this.SteamWorkshopDirectoryWatcher.Created += OnSteamWorkshopDirectoryChanged;
+            this.SteamWorkshopDirectoryWatcher.Deleted += OnSteamWorkshopDirectoryChanged;
 
             this.Manager = new ModManager();
             var result = this.Manager.Load();
@@ -47,11 +56,17 @@ namespace HSModLoader.App
                 this.ShowPopupMessage("Warning", result.ErrorMessage);
             }
 
-            this.ModViews = new ObservableCollection<ModView>();
-            this.ListAvailableMods.ItemsSource = this.ModViews;
-            this.RebuildModViews();
+            if(!string.IsNullOrEmpty(this.Manager.GameFolderPath))
+            {
+                this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
+                this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+            }
 
-            this.SelectedMod = new ModView(new ModConfiguration());
+            this.ModViews = new ObservableCollection<ModViewModel>();
+            this.ListAvailableMods.ItemsSource = this.ModViews;
+            this.RebuildModViewModels();
+
+            this.SelectedMod = new ModViewModel(new ModConfiguration());
             this.ModInfoPanel.DataContext = this.SelectedMod;
             this.ModStatePanel.DataContext = this.SelectedMod;
 
@@ -61,6 +76,7 @@ namespace HSModLoader.App
             }
 
         }
+
 
         // The context menu for the main ListView is declared in XAML.
         // This method makes it so the context menu only appears if a ListViewItem
@@ -80,12 +96,12 @@ namespace HSModLoader.App
             this.ListAvailableMods.ContextMenu = null;
         }
 
-        private void RebuildModViews()
+        private void RebuildModViewModels()
         {
             this.ModViews.Clear();
             foreach (var mod in this.Manager.ModConfigurations)
             {
-                this.ModViews.Add(new ModView(mod));
+                this.ModViews.Add(new ModViewModel(mod));
             }
         }
 
@@ -142,7 +158,10 @@ namespace HSModLoader.App
             }
             else if (result == true && !string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
-                this.RebuildModViews();
+                this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
+                this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+
+                this.RebuildModViewModels();
                 this.ListAvailableMods.Items.Refresh();
                 this.SelectedMod.Refresh();
                 this.Save();
@@ -224,7 +243,7 @@ namespace HSModLoader.App
             {
                 var configuration = this.Manager.ModConfigurations[selection];
                 this.Manager.ShiftModOrderUp(selection);
-                this.RebuildModViews();
+                this.RebuildModViewModels();
                 this.ListAvailableMods.SelectedIndex = configuration.OrderIndex;
             }
 
@@ -238,7 +257,7 @@ namespace HSModLoader.App
             {
                 var configuration = this.Manager.ModConfigurations[selection];
                 this.Manager.ShiftModOrderDown(selection);
-                this.RebuildModViews();
+                this.RebuildModViewModels();
                 this.ListAvailableMods.SelectedIndex = configuration.OrderIndex;
             }
         }
@@ -294,7 +313,7 @@ namespace HSModLoader.App
                 {
                     this.Manager.UnregisterMod(configuration);
                     this.Manager.Save();
-                    this.RebuildModViews();
+                    this.RebuildModViewModels();
                     this.ListAvailableMods.SelectedIndex = -1;
                 }
 
@@ -307,7 +326,7 @@ namespace HSModLoader.App
         {
             if (result.IsSuccessful)
             {
-                this.RebuildModViews();
+                this.RebuildModViewModels();
                 this.ListAvailableMods.SelectedIndex = this.Manager.ModConfigurations.Count - 1;
             }
             else
@@ -372,11 +391,6 @@ namespace HSModLoader.App
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
         {
             Process.Start(this.Manager.GetPathToGameExecutable());
-        }
-
-        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            this.Save();
         }
 
         private void OnRightClickMenuOpening(object sender, ContextMenuEventArgs e)
@@ -450,6 +464,52 @@ namespace HSModLoader.App
             }
         }
 
+        private void OnSteamWorkshopDirectoryChanged(object sender, FileSystemEventArgs e)
+        {
+            
+            if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                var start = DateTime.Now;
+
+                while (e.FullPath.IsFileLocked() == FileExtensions.FileState.Locked)
+                {
+                    // We need to wait until the mod.json file is finished downloading
+                    // and can actually be read.
+                    Thread.Sleep(SteamWorkshopCreationSleepTime);
+
+                    if ((DateTime.Now - start).TotalSeconds > SteamWorkshopMaximumSleepTime)
+                    {
+                        return;
+                    }
+
+                }
+            }
+            else if (e.ChangeType == WatcherChangeTypes.Deleted)
+            {
+                // Give a chance for the mod storage folder to fully be deleted since we're
+                // detecting changes on mod.json. This way the view refreshes with the
+                // deleted mod removed from the list
+                Thread.Sleep(SteamWorkshopDeletionSleepTime);
+            }
+
+            var changes = this.Manager.ScanSteamWorkshopModsFolder();
+
+            if (changes.Count > 0)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    this.RebuildModViewModels();
+                    this.ListAvailableMods.Items.Refresh();
+                    this.SelectedMod.Refresh();
+                });
+            }
+
+        }
+
+        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.Save();
+        }
 
     }
 }
