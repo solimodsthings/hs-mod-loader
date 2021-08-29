@@ -5,8 +5,10 @@ This repository contains a mod loader and management tool for [Himeko Sutori](ht
 
 ### Running the Mod Loader
 1. The Mod Loader is now bundled with Himeko Sutori on Steam. Simply choose to launch it when presented with launch options: 
+
    ![Image](https://i.imgur.com/reBPOYT.png)
 2. When prompted, provide the path to Himeko Sutori's installation folder. You can also choose to hit the ```Autodetect Using Steam``` button to try and autofill the path:  
+
    ![Image](https://i.imgur.com/BKIB4zf.png)
 
 ### Adding Steam mods
