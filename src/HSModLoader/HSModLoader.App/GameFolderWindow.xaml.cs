@@ -80,7 +80,7 @@ namespace HSModLoader.App
                 // check to see if the user selected a subdirectory of the main game
                 // folder. If they did then it is posisble to extract the correct path.
 
-                var possibleMatch = GamePath.ExtractGameFolder(folder, 3);
+                var possibleMatch = Game.ExtractGameFolder(folder, 3);
                 if(!string.IsNullOrEmpty(possibleMatch))
                 {
                     result = this.Manager.RegisterGameFolderPath(possibleMatch);

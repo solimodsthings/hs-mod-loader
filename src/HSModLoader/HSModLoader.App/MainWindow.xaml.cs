@@ -33,7 +33,7 @@ namespace HSModLoader.App
         private static int SteamWorkshopDeletionSleepTime = 1000; // in milliseconds
 
         public ModManager Manager { get; set; }
-        private FileSystemWatcher SteamWorkshopDirectoryWatcher { get; set; }
+        private FileSystemWatcher SteamWorkshopDirectoryWatcher { get; set; } // Used to check if a new mod has been subscribed to
         public ObservableCollection<ModViewModel> ModViews { get; set; }
         public ModViewModel SelectedMod { get; set; }
 
@@ -340,16 +340,26 @@ namespace HSModLoader.App
             this.ShowOverlay(true);
             this.ShowProgressOverlay(true);
 
-            var worker = new BackgroundWorker();
-            worker.DoWork += ApplyModsAsync;
-            worker.RunWorkerCompleted += delegate (object s, RunWorkerCompletedEventArgs args)
+            if(this.IsGameRunning())
             {
-                Dispatcher.Invoke(() => {
-                    this.ShowOverlay(false);
-                    this.ShowProgressOverlay(false);
-                });
-            };
-            worker.RunWorkerAsync();
+                this.ShowProgressOverlay(false);
+                this.ShowPopupMessage("Warning", "Cannot apply mods right now because the game is currently running.");
+                this.ShowOverlay(false);
+            }
+            else
+            {
+                var worker = new BackgroundWorker();
+                worker.DoWork += ApplyModsAsync;
+                worker.RunWorkerCompleted += delegate (object s, RunWorkerCompletedEventArgs args)
+                {
+                    Dispatcher.Invoke(() => {
+                        this.ShowOverlay(false);
+                        this.ShowProgressOverlay(false);
+                    });
+                };
+                worker.RunWorkerAsync();
+            }
+
         }
 
         private void ApplyModsAsync(object sender, DoWorkEventArgs e)
@@ -390,7 +400,17 @@ namespace HSModLoader.App
 
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
         {
-            Process.Start(this.Manager.GetPathToGameExecutable());
+            if (this.IsGameRunning())
+            {
+                this.ShowPopupMessage("Warning", "Cannot launch the game because the game is already running.");
+                this.ShowProgressOverlay(false);
+                this.ShowOverlay(false);
+            }
+            else
+            {
+                Process.Start(this.Manager.GetPathToGameExecutable());
+            }
+            
         }
 
         private void OnRightClickMenuOpening(object sender, ContextMenuEventArgs e)
@@ -504,6 +524,11 @@ namespace HSModLoader.App
                 });
             }
 
+        }
+
+        private bool IsGameRunning()
+        {
+            return Process.GetProcessesByName(Game.ProcessName).Length > 0;
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
