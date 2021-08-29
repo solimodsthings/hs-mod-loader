@@ -16,33 +16,11 @@ namespace HSModLoader
 
     public class ModManager
     {
-        #region Private Constants
-        // Base game folders
-        private static readonly string GameModsFolder = @"RPGTacGame\Mods";                    // relative to GameFolderPath
-        private static readonly string RelativeGameModsFolder = @"..\..\RPGTacGame\Mods";      // relative to the game executable and used in .ini key-value pairs
-        private static readonly string GameExecutable64Bit = @"Binaries\Win64\RPGTacGame.exe"; // relative to GameFolderPath
-        private static readonly string GameExecutable32Bit = @"Binaries\Win32\RPGTacGame.exe"; // relative to GameFolderPath
-        private static readonly string GameConfigurationsFolder = @"RPGTacGame\Config";        // relative to GameFolderPath
 
-        // Steam integration
-        private static readonly string SteamModsFolder = @"..\..\workshop\content\669500";               // relative to GameFolderPath
-        private static readonly string RelativeSteamModsFolder = @"..\..\..\..\workshop\content\669500"; // relative to the game executable and used in .ini key-value pairs
-
-        // Configuration files and their structure
-        private static readonly string GameEngineConfigurationFile = "RPGTacEngine.ini";
-        private static readonly string GameEnginePathSection = "Core.System";
-        private static readonly string GameEngineContentPathKey = "Paths";
-        private static readonly string GameEngineScriptPathKey = "ScriptPaths";
-        private static readonly string GameEngineLocalizationPathKey = "LocalizationPaths";
-
-        private static readonly string GameMutatorConfigurationFile = "RPGTacMods.ini";
-        private static readonly string MutatorLoaderSection = "rpgtacgame.RPGTacMutatorLoader";
-        private static readonly string MutatorLoaderKey = "MutatorsLoaded";
-
-        // Files that are not part of the base game
-        private static readonly string ConfigurationFile = "config.json"; // relative to app folder
-        private static readonly string FileChangesLogFile = "filechanges.log"; // relative to app folder
-        #endregion
+        private static readonly string ConfigurationFile = "config.json";           // relative to app folder
+        private static readonly string FileChangesLogFile = "filechanges.log";      // relative to app folder
+        private static readonly string StandaloneModsFolder = @"RPGTacGame\Mods";   // relative to GameFolderPath
+        private static readonly string RelativePathToStandaloneModsFolder = @"..\..\RPGTacGame\Mods"; // relative to the game executable and used in .ini key-value pairs
 
         public List<ModConfiguration> ModConfigurations { get; set; }
 
@@ -170,7 +148,7 @@ namespace HSModLoader
         {
             var result = new Result();
 
-            if(GamePath.IsGameFolder(path))
+            if(Game.IsGameFolder(path))
             {
                 this.GameFolderPath = path;
                 this.InitializeGameModsFolder();
@@ -199,7 +177,7 @@ namespace HSModLoader
                 throw new InvalidOperationException("Cannot initialize game mods folder because the path to the game folder has not been defined.");
             }
 
-            var mods = Path.Combine(this.GameFolderPath, GameModsFolder);
+            var mods = Path.Combine(this.GameFolderPath, StandaloneModsFolder);
 
             if (!Directory.Exists(mods))
             {
@@ -223,7 +201,7 @@ namespace HSModLoader
         private List<AutomaticModRegistrationEvent> ScanStandaloneModsFolder()
         {
             var changes = new List<AutomaticModRegistrationEvent>();
-            var modsFolder = Path.Combine(this.GameFolderPath, GameModsFolder);
+            var modsFolder = Path.Combine(this.GameFolderPath, StandaloneModsFolder);
 
             if (Directory.Exists(modsFolder))
             {
@@ -287,7 +265,7 @@ namespace HSModLoader
         public List<AutomaticModRegistrationEvent> ScanSteamWorkshopModsFolder()
         {
             var changes = new List<AutomaticModRegistrationEvent>();
-            var steamModsFolder = Path.Combine(this.GameFolderPath, SteamModsFolder);
+            var steamModsFolder = Path.Combine(this.GameFolderPath, Game.RelativePathToSteamModsFolder);
 
             // Note: It is a valid scenario for the mods folder to have been created yet.
             if (Directory.Exists(steamModsFolder))
@@ -344,17 +322,17 @@ namespace HSModLoader
             var mod = configuration.Mod;
 
             // See if this mod has paths defined in RPGTacEngine.ini...
-            var gameEngineConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameEngineConfigurationFile);
+            var gameEngineConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.EngineConfigurationFile);
             var gameEngineConfig = new GameConfiguration(gameEngineConfigPath);
             gameEngineConfig.Load();
 
             var relativePath = this.GetRelativeModStoragePath(configuration);
-            var hasAllPathsDefined = gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineContentPathKey, relativePath)
-                                     && gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath)
-                                     && gameEngineConfig.IsIncluded(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
+            var hasAllPathsDefined = gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineContentPathKey, relativePath)
+                                     && gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineLocalizationPathKey, relativePath)
+                                     && gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineScriptPathKey, relativePath);
 
             // See if this mod has a mutator defined in RPGTacMods.ini...
-            var mutatorConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameMutatorConfigurationFile);
+            var mutatorConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.MutatorConfigurationFile);
             var mutatorConfig = new GameConfiguration(mutatorConfigPath);
             mutatorConfig.Load();
 
@@ -363,7 +341,7 @@ namespace HSModLoader
 
             if(configuration.Mod.HasMutator)
             {
-                var mutators = mutatorConfig.FindItem(MutatorLoaderSection, MutatorLoaderKey)?.Value?.Split(',');
+                var mutators = mutatorConfig.FindItem(Game.MutatorLoaderSection, Game.MutatorLoaderKey)?.Value?.Split(',');
                 if(mutators != null && mutators.Contains(configuration.Mod.MutatorClass))
                 {
                     hasMutatorEnabled = true;
@@ -404,7 +382,7 @@ namespace HSModLoader
             }
             else
             {
-                var temporaryDestination = Path.Combine(this.GameFolderPath, GameModsFolder, Path.GetRandomFileName());
+                var temporaryDestination = Path.Combine(this.GameFolderPath, StandaloneModsFolder, Path.GetRandomFileName());
                 ModConfiguration configuration = null;
 
                 try
@@ -489,7 +467,7 @@ namespace HSModLoader
                 throw new ModRegistrationException(newMod, string.Format("The specified unmanaged storage folder doesn't exist for mod with ID '{0}'", newMod.Id));
             }
 
-            var newModStorageFolder = Path.Combine(this.GameFolderPath, GameModsFolder, newMod.Id);
+            var newModStorageFolder = Path.Combine(this.GameFolderPath, StandaloneModsFolder, newMod.Id);
 
             if (unmanagedStandaloneStorageFolder != newModStorageFolder)
             {
@@ -593,7 +571,7 @@ namespace HSModLoader
 
             try
             {
-                var gameEngineConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameEngineConfigurationFile);
+                var gameEngineConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.EngineConfigurationFile);
                 var gameEngineConfig = new GameConfiguration(gameEngineConfigPath);
 
                 gameEngineConfig.Load();
@@ -673,7 +651,7 @@ namespace HSModLoader
         /// </summary>
         private void UpdateMutatorIniFile()
         {
-            var mutatorsConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameMutatorConfigurationFile);
+            var mutatorsConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.MutatorConfigurationFile);
             var mutatorsConfig = new GameConfiguration(mutatorsConfigPath);
             mutatorsConfig.Load();
 
@@ -703,18 +681,18 @@ namespace HSModLoader
             // items are added to the .ini file.
             var newMutatorList = string.Join(",", enabledMutatorClasses);
 
-            var configSection = mutatorsConfig.FindSection(MutatorLoaderSection);
+            var configSection = mutatorsConfig.FindSection(Game.MutatorLoaderSection);
 
             if (configSection == null)
             {
-                mutatorsConfig.Sections.Add(new GameConfigurationSection() { Name = MutatorLoaderSection });
+                mutatorsConfig.Sections.Add(new GameConfigurationSection() { Name = Game.MutatorLoaderSection });
             }
 
-            var configItem = mutatorsConfig.FindItem(MutatorLoaderSection, MutatorLoaderKey);
+            var configItem = mutatorsConfig.FindItem(Game.MutatorLoaderSection, Game.MutatorLoaderKey);
 
             if (configItem == null)
             {
-                configSection.Items.Add(new GameConfigurationItem() { Key = MutatorLoaderKey, Value = newMutatorList });
+                configSection.Items.Add(new GameConfigurationItem() { Key = Game.MutatorLoaderKey, Value = newMutatorList });
             }
             else
             {
@@ -766,7 +744,7 @@ namespace HSModLoader
         {
             var result = new Result() { IsSuccessful = true };
 
-            var gameEngineConfigPath = Path.Combine(this.GameFolderPath, GameConfigurationsFolder, GameEngineConfigurationFile);
+            var gameEngineConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.EngineConfigurationFile);
             var gameEngineConfig = new GameConfiguration(gameEngineConfigPath);
             gameEngineConfig.Load();
 
@@ -828,12 +806,12 @@ namespace HSModLoader
                 }
 
                 var relativePath = this.GetRelativeModStoragePath(configuration);
-                gameEngineConfig.Include(GameEnginePathSection, GameEngineContentPathKey, relativePath);
-                gameEngineConfig.Include(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
+                gameEngineConfig.Include(Game.EnginePathSection, Game.EngineContentPathKey, relativePath);
+                gameEngineConfig.Include(Game.EnginePathSection, Game.EngineLocalizationPathKey, relativePath);
 
                 if(configuration.State == ModState.Enabled || configuration.State == ModState.SoftDisabled)
                 {
-                    gameEngineConfig.Include(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
+                    gameEngineConfig.Include(Game.EnginePathSection, Game.EngineScriptPathKey, relativePath);
                 }
                 /*
                 else if(configuration.State == ModState.SoftDisabled)
@@ -875,9 +853,9 @@ namespace HSModLoader
             try
             {
                 var relativePath = this.GetRelativeModStoragePath(configuration);
-                gameEngineConfig.Exclude(GameEnginePathSection, GameEngineContentPathKey, relativePath);
-                gameEngineConfig.Exclude(GameEnginePathSection, GameEngineScriptPathKey, relativePath);
-                gameEngineConfig.Exclude(GameEnginePathSection, GameEngineLocalizationPathKey, relativePath);
+                gameEngineConfig.Exclude(Game.EnginePathSection, Game.EngineContentPathKey, relativePath);
+                gameEngineConfig.Exclude(Game.EnginePathSection, Game.EngineScriptPathKey, relativePath);
+                gameEngineConfig.Exclude(Game.EnginePathSection, Game.EngineLocalizationPathKey, relativePath);
                 
                 result.IsSuccessful = true;
                 this.FileChangesLog.Record("RPGTacMods.ini will be updated to *not* include paths for mod '{0}' for folder '{1}'", configuration.Mod?.Id, configuration.ModStorageFolder);
@@ -912,12 +890,12 @@ namespace HSModLoader
                     throw new ModException("Cannot extract relative mod storage path becuse the specified mod does not have a storage folder that exists.");
                 }
 
-                return Path.Combine(RelativeGameModsFolder, new DirectoryInfo(configuration.ModStorageFolder).Name);
+                return Path.Combine(RelativePathToStandaloneModsFolder, new DirectoryInfo(configuration.ModStorageFolder).Name);
 
             }
             else if(configuration.RegistrationType == RegistrationType.SteamWorkshopItem)
             {
-                return Path.Combine(RelativeSteamModsFolder, new DirectoryInfo(configuration.ModStorageFolder).Name);
+                return Path.Combine(Game.RelativeIniPathToSteamModsFolder, new DirectoryInfo(configuration.ModStorageFolder).Name);
             }
             else
             {
@@ -976,11 +954,11 @@ namespace HSModLoader
             {
                 if (Use64Bit)
                 {
-                    return Path.Combine(this.GameFolderPath, GameExecutable64Bit);
+                    return Path.Combine(this.GameFolderPath, Game.RelativePathToExecutable64Bit);
                 }
                 else
                 {
-                    return Path.Combine(this.GameFolderPath, GameExecutable32Bit);
+                    return Path.Combine(this.GameFolderPath, Game.RelativePathToExecutable32Bit);
                 }
             }
             else
@@ -993,7 +971,7 @@ namespace HSModLoader
         {
             if (!string.IsNullOrEmpty(this.GameFolderPath))
             {
-                return Path.Combine(this.GameFolderPath, SteamModsFolder);
+                return Path.Combine(this.GameFolderPath, Game.RelativePathToSteamModsFolder);
             }
             else
             {
