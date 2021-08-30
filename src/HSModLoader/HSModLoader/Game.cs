@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,8 +13,8 @@ namespace HSModLoader
 {
 
     /// <summary>
-    /// Utility methods for validating or extracting the game path
-    /// and location of shared game constants.
+    /// Shared constants and utility methods for interacting with
+    /// the game.
     /// </summary>
     public class Game
     {
@@ -88,6 +89,10 @@ namespace HSModLoader
         /// </summary>
         public static readonly string MutatorLoaderKey = "MutatorsLoaded";
 
+        public static bool IsRunning()
+        {
+            return Process.GetProcessesByName(Game.ProcessName).Length > 0;
+        }
         
         /// <summary>
         /// Checks whether the specified path is the root folder
@@ -95,7 +100,7 @@ namespace HSModLoader
         /// </summary>
         /// <param name="path">The path to validate.</param>
         /// <returns>True if the path is the root folder containing the game, else false.</returns>
-        public static bool IsGameFolder(string path)
+        public static bool IsInsideFolder(string path)
         {
             try
             {
@@ -144,7 +149,7 @@ namespace HSModLoader
                 {
                     while (directory != null && limit >= 0)
                     {
-                        if (Game.IsGameFolder(directory.FullName))
+                        if (Game.IsInsideFolder(directory.FullName))
                         {
                             return directory.FullName;
                         }

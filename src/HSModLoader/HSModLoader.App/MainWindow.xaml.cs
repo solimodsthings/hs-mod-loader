@@ -340,7 +340,7 @@ namespace HSModLoader.App
             this.ShowOverlay(true);
             this.ShowProgressOverlay(true);
 
-            if(this.IsGameRunning())
+            if(Game.IsRunning())
             {
                 this.ShowProgressOverlay(false);
                 this.ShowPopupMessage("Warning", "Cannot apply mods right now because the game is currently running.");
@@ -400,7 +400,7 @@ namespace HSModLoader.App
 
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
         {
-            if (this.IsGameRunning())
+            if (Game.IsRunning())
             {
                 this.ShowPopupMessage("Warning", "Cannot launch the game because the game is already running.");
                 this.ShowProgressOverlay(false);
@@ -524,11 +524,6 @@ namespace HSModLoader.App
                 });
             }
 
-        }
-
-        private bool IsGameRunning()
-        {
-            return Process.GetProcessesByName(Game.ProcessName).Length > 0;
         }
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)

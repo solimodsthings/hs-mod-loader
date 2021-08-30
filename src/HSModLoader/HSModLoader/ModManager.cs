@@ -148,7 +148,7 @@ namespace HSModLoader
         {
             var result = new Result();
 
-            if(Game.IsGameFolder(path))
+            if(Game.IsInsideFolder(path))
             {
                 this.GameFolderPath = path;
                 this.InitializeGameModsFolder();
