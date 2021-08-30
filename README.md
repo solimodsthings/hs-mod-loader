@@ -1,26 +1,28 @@
 # Overview
 This repository contains a mod loader and management tool for [Himeko Sutori](https://store.steampowered.com/app/669500/Himeko_Sutori/). Integration with the Steam Workshop is supported.
 
-The tool is currently in a beta release.
-
 ## Quick Start ✨
 
 ### Running the Mod Loader
-1. Download the [latest release](https://github.com/solimodsthings/hs-mod-loader/releases)
-2. Unzip the file to a local directory of your choosing
-3. Run ```HSModLoader.exe```
-4. When prompted, provide the path to Himeko Sutori's installation folder. You can also choose to hit the ```Autodetect Using Steam``` button to try and autofill the path.
+1. The Mod Loader is now bundled with Himeko Sutori on Steam. Simply choose to launch it when presented with launch options: 
+
+   ![Image](https://i.imgur.com/4921dTA.png)
+2. When prompted, provide the path to Himeko Sutori's installation folder. You can also choose to hit the ```Autodetect Using Steam``` button to try and autofill the path:  
+
+   ![Image](https://i.imgur.com/BKIB4zf.png)
 
 ### Adding Steam mods
 1. Go to Himeko Sutori's Steam Workshop
 2. Subscribe to your desired mods
-3. Run ```HSModLoader.exe```
+3. Run ```Mod Loader```
 4. Enable the mods you just subscribed to
 5. Hit the ```Apply Mods to Game``` button
 
+![Image](https://i.imgur.com/Rv7qmOE.png)
+
 ### Adding standalone mods
 1. Download your favorite Himeko Sutori mod packages (these are ```.hsmod``` files)
-2. Run ```HSModLoader.exe```
+2. Run ```Mod Loader```
 3. Drag-and-drop the ```.hsmod``` files into the mod loader window to add it
 4. Enable the mod you just added and the hit ```Apply Mods to Game``` button
 
