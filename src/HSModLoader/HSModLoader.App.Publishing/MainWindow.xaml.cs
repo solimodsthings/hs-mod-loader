@@ -445,7 +445,7 @@ namespace HSModLoader.App.Publishing
                 }
 
                 this.ShowProgressMessage("Accessing Steam");
-
+                
                 if (SteamAPI.Init())
                 {
                     var appId = new AppId_t((uint)DefaultAppId);

@@ -19,17 +19,29 @@ namespace HSModLoader.WpfControls
     /// </summary>
     public partial class MessageWindow : Window
     {
-        public MessageWindow(string header, string body)
+        public MessageWindow(string header, string body, bool showCancel = false)
         {
             InitializeComponent();
 
             this.LabelMessageHeader.Content = header;
             this.TextBoxMessageBody.Text = body;
 
+            if(showCancel)
+            {
+                this.ButtonCancel.Visibility = Visibility.Visible;
+            }
+
         }
 
         private void OnOkButtonClicked(object sender, RoutedEventArgs e)
         {
+            this.DialogResult = true;
+            this.Close();
+        }
+
+        private void OnCancelButtonClicked(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
             this.Close();
         }
     }
