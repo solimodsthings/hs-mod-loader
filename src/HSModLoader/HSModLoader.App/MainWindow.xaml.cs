@@ -34,7 +34,7 @@ namespace HSModLoader.App
 
         public ModManager Manager { get; set; }
         private FileSystemWatcher SteamWorkshopDirectoryWatcher { get; set; } // Used to check if a new mod has been subscribed to
-        public ObservableCollection<ModViewModel> ModViews { get; set; }
+        public ObservableCollection<ModViewModel> ModViewModels { get; set; }
         public ModViewModel SelectedMod { get; set; }
 
         public MainWindow()
@@ -42,28 +42,28 @@ namespace HSModLoader.App
             this.InitializeComponent();
             this.InitializeContextMenuComponent();
 
+            this.Manager = new ModManager();
+            var result = this.Manager.Load();
+
+            if(!result.IsSuccessful)
+            {
+                this.ShowMessage("Warning", result.ErrorMessage);
+            }
+
             this.SteamWorkshopDirectoryWatcher = new FileSystemWatcher();
             this.SteamWorkshopDirectoryWatcher.IncludeSubdirectories = true;
             this.SteamWorkshopDirectoryWatcher.Filter = Mod.InfoFile;
             this.SteamWorkshopDirectoryWatcher.Created += OnSteamWorkshopDirectoryChanged;
             this.SteamWorkshopDirectoryWatcher.Deleted += OnSteamWorkshopDirectoryChanged;
 
-            this.Manager = new ModManager();
-            var result = this.Manager.Load();
-
-            if(!result.IsSuccessful)
-            {
-                this.ShowPopupMessage("Warning", result.ErrorMessage);
-            }
-
-            if(!string.IsNullOrEmpty(this.Manager.GameFolderPath))
+            if (!string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
                 this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
                 this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
             }
 
-            this.ModViews = new ObservableCollection<ModViewModel>();
-            this.ListAvailableMods.ItemsSource = this.ModViews;
+            this.ModViewModels = new ObservableCollection<ModViewModel>();
+            this.ListAvailableMods.ItemsSource = this.ModViewModels;
             this.RebuildModViewModels();
 
             this.SelectedMod = new ModViewModel(new ModConfiguration());
@@ -72,15 +72,15 @@ namespace HSModLoader.App
 
             if(this.Manager.ModConfigurations.Count > 0)
             {
+                // This should get the mod info panel to update automatically
                 this.ListAvailableMods.SelectedIndex = 0;
             }
 
         }
 
-
         // The context menu for the main ListView is declared in XAML.
         // This method makes it so the context menu only appears if a ListViewItem
-        // is right-licked, not anywhere in the ListView (including empty space).
+        // is right-clicked, not anywhere in the ListView (including empty space).
         // If this can all be moved to XAML in the future, it should.
         private void InitializeContextMenuComponent()
         {
@@ -98,16 +98,26 @@ namespace HSModLoader.App
 
         private void RebuildModViewModels()
         {
-            this.ModViews.Clear();
+            this.ModViewModels.Clear();
             foreach (var mod in this.Manager.ModConfigurations)
             {
-                this.ModViews.Add(new ModViewModel(mod));
+                this.ModViewModels.Add(new ModViewModel(mod));
             }
+        }
+
+        private void RefreshModList()
+        {
+            this.ListAvailableMods.Items.Refresh();
+        }
+
+        private void RefreshModInfoPanel()
+        {
+            this.SelectedMod.Refresh();
         }
 
         // This is a method in case we need to put an task-in-progress animation
         // when data is being serialized to disk
-        private void Save()
+        private void SaveModManager()
         {
             this.Manager.Save();
         }
@@ -116,7 +126,7 @@ namespace HSModLoader.App
         /// Shows or hides a dark, transparent overlay across the entirety of the application window.
         /// </summary>
         /// <param name="show">True to show the overlay or false to turn it off.</param>
-        private void ShowOverlay(bool show)
+        private void ShowDarkOverlay(bool show)
         {
             if (show)
             {
@@ -128,7 +138,7 @@ namespace HSModLoader.App
             }
         }
 
-        private void ShowProgressOverlay(bool show)
+        private void ShowProgressRing(bool show)
         {
             if (show)
             {
@@ -140,9 +150,25 @@ namespace HSModLoader.App
             }
         }
 
+        private void ShowMessage(string header, string body)
+        {
+            this.ShowDarkOverlay(true);
+            var dialog = new MessageWindow(header, body);
+
+            if (this.IsVisible)
+            {
+                dialog.Owner = this;
+            }
+
+            dialog.ShowDialog();
+
+            this.ShowDarkOverlay(false);
+
+        }
+
         private void ShowGameFolderDialog()
         {
-            this.ShowOverlay(true);
+            this.ShowDarkOverlay(true);
 
             var dialog = new GameFolderWindow(this.Manager);
             dialog.Owner = this;
@@ -162,31 +188,14 @@ namespace HSModLoader.App
                 this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
 
                 this.RebuildModViewModels();
-                this.ListAvailableMods.Items.Refresh();
-                this.SelectedMod.Refresh();
-                this.Save();
+                this.RefreshModList();
+                this.RefreshModInfoPanel();
+                this.SaveModManager();
             }
 
-            this.ShowOverlay(false);
+            this.ShowDarkOverlay(false);
 
         }
-
-        private void ShowPopupMessage(string header, string body)
-        {
-            this.ShowOverlay(true);
-            var dialog = new MessageWindow(header, body);
-
-            if(this.IsVisible)
-            {
-                dialog.Owner = this;
-            }
-
-            dialog.ShowDialog();
-
-            this.ShowOverlay(false);
-
-        }
-
 
         private void OnSelectedModChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -230,9 +239,13 @@ namespace HSModLoader.App
             }
         }
 
+        /// <summary>
+        /// In this context, controller refers to the Radio Button controls
+        /// that change mod state.
+        /// </summary>
         private void OnControllerUsed(object sender, RoutedEventArgs e)
         {
-            this.ListAvailableMods.Items.Refresh();
+            this.RefreshModList();
         }
 
         private void OnMoveModOrderUp(object sender, RoutedEventArgs e)
@@ -262,6 +275,7 @@ namespace HSModLoader.App
             }
         }
 
+        // Only for standalone mods
         private void OnAddNewModByDragDrop(object sender, DragEventArgs e)
         {
 
@@ -278,8 +292,24 @@ namespace HSModLoader.App
 
         }
 
+        
         private void OnAddNewModButtonClick(object sender, RoutedEventArgs e)
         {
+            var message = new MessageWindow("Steam", "Mods are available through the Steam Workshop. Mods that you subscribe to will appear in this mod list. \n\nWould you like to open the Steam Workshop?", true);
+            message.Owner = this;
+
+            this.ShowDarkOverlay(true);
+            if(message.ShowDialog() == true)
+            {
+                Game.OpenSteamWorkshop();
+            }
+
+            this.ShowDarkOverlay(false);
+
+            /* 
+            // Prior to Steam Workshop integration, this button showed a file dialog
+            // to select an .hsmod file to load. Here was the code:
+            
             var browse = new OpenFileDialog();
             browse.CheckFileExists = true;
             browse.DefaultExt = ".hsmod"; // Default file extension
@@ -290,15 +320,18 @@ namespace HSModLoader.App
                 var result = this.Manager.RegisterMod(browse.FileName);
                 this.HandleRegistrationResult(result);
             }
+            */
         }
 
+        // Only for standalone mods. Steam mods should only be
+        // removed by unsubscribing from them in the Steam Workshop
         private void OnRemoveMod(object sender, RoutedEventArgs e)
         {
             var selectedIndex = this.ListAvailableMods.SelectedIndex;
 
             if(selectedIndex >= 0 && selectedIndex < this.Manager.ModConfigurations.Count)
             {
-                this.ShowOverlay(true);
+                this.ShowDarkOverlay(true);
                 
                 var configuration = this.Manager.ModConfigurations[selectedIndex];
                 var mod = configuration.Mod;
@@ -317,7 +350,7 @@ namespace HSModLoader.App
                     this.ListAvailableMods.SelectedIndex = -1;
                 }
 
-                this.ShowOverlay(false);
+                this.ShowDarkOverlay(false);
             }
 
         }
@@ -331,32 +364,29 @@ namespace HSModLoader.App
             }
             else
             {
-                this.ShowPopupMessage("Warning", result.ErrorMessage);
+                this.ShowMessage("Warning", result.ErrorMessage);
             }
         }
 
+        /// <summary>
+        /// In this context, "Save" means "Apply Mods to Game".
+        /// </summary>
         private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
-            this.ShowOverlay(true);
-            this.ShowProgressOverlay(true);
+            this.ShowDarkOverlay(true);
+            this.ShowProgressRing(true);
 
             if(Game.IsRunning())
             {
-                this.ShowProgressOverlay(false);
-                this.ShowPopupMessage("Warning", "Cannot apply mods right now because the game is currently running.");
-                this.ShowOverlay(false);
+                this.ShowProgressRing(false);
+                this.ShowMessage("Warning", "Cannot apply mods right now because the game is currently running.");
+                this.ShowDarkOverlay(false);
             }
             else
             {
                 var worker = new BackgroundWorker();
                 worker.DoWork += ApplyModsAsync;
-                worker.RunWorkerCompleted += delegate (object s, RunWorkerCompletedEventArgs args)
-                {
-                    Dispatcher.Invoke(() => {
-                        this.ShowOverlay(false);
-                        this.ShowProgressOverlay(false);
-                    });
-                };
+                worker.RunWorkerCompleted += OnApplyModsCompleted;
                 worker.RunWorkerAsync();
             }
 
@@ -373,7 +403,7 @@ namespace HSModLoader.App
             {
                 Dispatcher.Invoke(() =>
                 {
-                    this.ShowPopupMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
+                    this.ShowMessage("Warning", result.ErrorMessage + "  See error.log for more details.");
                 });
             }
             else
@@ -390,21 +420,27 @@ namespace HSModLoader.App
             Dispatcher.Invoke(() =>
             {
                 this.Manager.Save();
-                // this.RebuildModViews();
-                this.ListAvailableMods.Items.Refresh();
-                this.SelectedMod.Refresh();
+                this.RefreshModList();
+                this.RefreshModInfoPanel();
             });
 
         }
 
+        private void OnApplyModsCompleted(object s, RunWorkerCompletedEventArgs args)
+        {
+            Dispatcher.Invoke(() => {
+                this.ShowDarkOverlay(false);
+                this.ShowProgressRing(false);
+            });
+        }
 
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e)
         {
             if (Game.IsRunning())
             {
-                this.ShowPopupMessage("Warning", "Cannot launch the game because the game is already running.");
-                this.ShowProgressOverlay(false);
-                this.ShowOverlay(false);
+                this.ShowMessage("Warning", "Cannot launch the game because the game is already running.");
+                this.ShowProgressRing(false);
+                this.ShowDarkOverlay(false);
             }
             else
             {
@@ -445,6 +481,9 @@ namespace HSModLoader.App
             }
         }
 
+        /// <summary>
+        /// In context, menu item refers to a right-click menu item.
+        /// </summary>
         private void OnMenuItemEnableMod(object sender, RoutedEventArgs e)
         {
             var index = this.ListAvailableMods.SelectedIndex;
@@ -453,8 +492,8 @@ namespace HSModLoader.App
             {
                 var configuration = this.Manager.ModConfigurations[index];
                 configuration.State = ModState.Enabled;
-                this.ListAvailableMods.Items.Refresh();
-                this.SelectedMod.Refresh();
+                this.RefreshModList();
+                this.RefreshModInfoPanel();
             }
         }
 
@@ -466,8 +505,8 @@ namespace HSModLoader.App
             {
                 var configuration = this.Manager.ModConfigurations[index];
                 configuration.State = ModState.SoftDisabled;
-                this.ListAvailableMods.Items.Refresh();
-                this.SelectedMod.Refresh();
+                this.RefreshModList();
+                this.RefreshModInfoPanel();
             }
         }
 
@@ -479,8 +518,8 @@ namespace HSModLoader.App
             {
                 var configuration = this.Manager.ModConfigurations[index];
                 configuration.State = ModState.Disabled;
-                this.ListAvailableMods.Items.Refresh();
-                this.SelectedMod.Refresh();
+                this.RefreshModList();
+                this.RefreshModInfoPanel();
             }
         }
 
@@ -507,7 +546,7 @@ namespace HSModLoader.App
             else if (e.ChangeType == WatcherChangeTypes.Deleted)
             {
                 // Give a chance for the mod storage folder to fully be deleted since we're
-                // detecting changes on mod.json. This way the view refreshes with the
+                // detecting changes on mod.json only. This way the view refreshes with the
                 // deleted mod removed from the list
                 Thread.Sleep(SteamWorkshopDeletionSleepTime);
             }
@@ -519,8 +558,8 @@ namespace HSModLoader.App
                 Dispatcher.Invoke(() =>
                 {
                     this.RebuildModViewModels();
-                    this.ListAvailableMods.Items.Refresh();
-                    this.SelectedMod.Refresh();
+                    this.RefreshModList();
+                    this.RefreshModInfoPanel();
                 });
             }
 
@@ -528,7 +567,7 @@ namespace HSModLoader.App
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            this.Save();
+            this.SaveModManager();
         }
 
     }

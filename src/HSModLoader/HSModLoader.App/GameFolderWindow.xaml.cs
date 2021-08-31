@@ -38,7 +38,6 @@ namespace HSModLoader.App
         }
         private void OnAutodetectButtonClick(object sender, RoutedEventArgs e)
         {
-            
 
             try
             {
@@ -80,7 +79,7 @@ namespace HSModLoader.App
                 // check to see if the user selected a subdirectory of the main game
                 // folder. If they did then it is posisble to extract the correct path.
 
-                var possibleMatch = Game.ExtractGameFolder(folder, 3);
+                var possibleMatch = Game.FindFolder(folder, 3);
                 if(!string.IsNullOrEmpty(possibleMatch))
                 {
                     result = this.Manager.RegisterGameFolderPath(possibleMatch);

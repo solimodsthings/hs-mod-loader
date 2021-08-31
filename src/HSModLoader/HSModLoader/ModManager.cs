@@ -369,7 +369,7 @@ namespace HSModLoader
         }
 
         /// <summary>
-        /// Registers the mod package file at the specified file path
+        /// Registers the standalone mod package file at the specified file path
         /// with this mod manager.
         /// </summary>
         public Result RegisterMod(string filepath)
