@@ -20,12 +20,6 @@ This repository contains a mod loader and management tool for [Himeko Sutori](ht
 
 ![Image](https://i.imgur.com/Rv7qmOE.png)
 
-### Adding standalone mods
-1. Download your favorite Himeko Sutori mod packages (these are ```.hsmod``` files)
-2. Run ```Mod Loader```
-3. Drag-and-drop the ```.hsmod``` files into the mod loader window to add it
-4. Enable the mod you just added and the hit ```Apply Mods to Game``` button
-
 ## Technical Documentation
 [All technical documentation resides in the wiki. (Click here to go to the wiki.)](https://github.com/solimodsthings/hs-mod-loader/wiki)
 
