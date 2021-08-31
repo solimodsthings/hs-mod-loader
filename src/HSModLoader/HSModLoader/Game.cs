@@ -89,6 +89,9 @@ namespace HSModLoader
         /// </summary>
         public static readonly string MutatorLoaderKey = "MutatorsLoaded";
 
+        /// <summary>
+        /// Checks to see if the game is already running.
+        /// </summary>
         public static bool IsRunning()
         {
             return Process.GetProcessesByName(Game.ProcessName).Length > 0;
@@ -107,14 +110,12 @@ namespace HSModLoader
                 var attributes = File.GetAttributes(path);
                 if (attributes.HasFlag(FileAttributes.Directory))
                 {
-                    if( Directory.Exists(path)
-                        && Directory.Exists(path + @"\RPGTacGame\Config")
-                        && Directory.Exists(path + @"\RPGTacGame\Content")
-                        && Directory.Exists(path + @"\RPGTacGame\Localization")
-                        && Directory.Exists(path + @"\RPGTacGame\Script")
-                        && File.Exists(path + @"\Binaries\Win64\RPGTacGame.exe")
-                        && File.Exists(path + @"\Binaries\Win32\RPGTacGame.exe")
-                        && File.Exists(path + @"\RPGTacGame\Config\RPGTacMods.ini"))
+                    if (Directory.Exists(path)
+                        && File.Exists(Path.Combine(path, @"RPGTacGame\Config\RPGTacMods.ini"))
+                        && File.Exists(Path.Combine(path, @"RPGTacGame\Config\RPGTacEngine.ini"))
+                        && File.Exists(Path.Combine(path, @"Binaries\Win64\RPGTacGame.exe"))
+                        && File.Exists(Path.Combine(path, @"Binaries\Win32\RPGTacGame.exe"))
+                    )
                     {
                         return true;
                     }
@@ -137,7 +138,7 @@ namespace HSModLoader
         /// <param name="path">The path whose parent folder needs to be validated.</param>
         /// <param name="recurse">The number of times this method should recurse up the directory hierarchy.</param>
         /// <returns>The path to a parent directory that is actually the game directory. If no such parent exists, the return value is null.</returns>
-        public static string ExtractGameFolder(string path, int recurse = 0)
+        public static string FindFolder(string path, int recurse = 0)
         {
             try
             {
@@ -167,6 +168,12 @@ namespace HSModLoader
             }
 
             return null;
+        }
+
+        public static void OpenSteamWorkshop()
+        {
+            var p = new ProcessStartInfo("steam://url/SteamWorkshopPage/669500"){ UseShellExecute = true, Verb = "open" };
+            Process.Start(p);
         }
 
     }
