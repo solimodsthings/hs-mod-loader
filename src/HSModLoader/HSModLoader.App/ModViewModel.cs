@@ -29,9 +29,9 @@ namespace HSModLoader.App
             {
                 var name = Configuration.Mod?.Name ?? string.Empty;
 
-                if(!this.IsManaged)
+                if(!this.IsManaged && !string.IsNullOrEmpty(name))
                 {
-                    name += " (Unmanaged)";
+                    name += " (New)";
                 }
 
                 return name;

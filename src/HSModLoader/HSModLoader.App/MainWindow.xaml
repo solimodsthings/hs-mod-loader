@@ -136,6 +136,13 @@
                         
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Author</Label>
                         <Label x:Name="LabelAuthorName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Author}"/>
+
+                        <Label x:Name="LabelSteamWorkshopPage" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="Collapsed">Steam</Label>
+                        <TextBlock x:Name="TextBlockSteamWorkshopPage" Padding="4,0,0,0" TextWrapping="Wrap" Visibility="Collapsed">
+                            <Hyperlink Click="OnSteamWorkshopPageLinkClick">
+                                <TextBlock Text="Go to Workshop Page" />
+                            </Hyperlink>
+                        </TextBlock>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Bottom">

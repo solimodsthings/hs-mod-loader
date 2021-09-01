@@ -209,11 +209,19 @@ namespace HSModLoader.App
 
                 if(mod.RegistrationType == RegistrationType.SteamWorkshopItem)
                 {
+                    // Future release:
+                    // this.LabelSteamWorkshopPage.Visibility = Visibility.Visible;
+                    // this.TextBlockSteamWorkshopPage.Visibility = Visibility.Visible;
+
                     this.ButtonRemoveMod.IsEnabled = false;
                     this.ButtonRemoveMod.ToolTip = "Unsubscribe from the Steam Workshop item to remove this mod.";
                 }
                 else
                 {
+                    // Future release:
+                    // this.LabelSteamWorkshopPage.Visibility = Visibility.Collapsed;
+                    // this.TextBlockSteamWorkshopPage.Visibility = Visibility.Collapsed;
+
                     this.ButtonRemoveMod.IsEnabled = true;
                     this.ButtonRemoveMod.ToolTip = null;
                 }
@@ -570,5 +578,22 @@ namespace HSModLoader.App
             this.SaveModManager();
         }
 
+        private void OnSteamWorkshopPageLinkClick(object sender, RoutedEventArgs e)
+        {
+            // Future release:
+            //var index = this.ListAvailableMods.SelectedIndex;
+
+            //if (index >= 0 && index < this.Manager.ModConfigurations.Count)
+            //{
+            //    var configuration = this.Manager.ModConfigurations[index];
+            //    var mod = configuration.Mod;
+
+            //    if (mod != null && mod.SteamWorkshopId.HasValue)
+            //    {
+            //        Game.OpenSteamWorkshopItem(mod.SteamWorkshopId.Value);
+            //    }
+
+            //}
+        }
     }
 }
