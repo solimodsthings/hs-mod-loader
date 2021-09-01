@@ -467,6 +467,7 @@ namespace HSModLoader.App.Publishing
 
                         this.ModContext.Mod.SteamWorkshopId = SteamUploadItemId;
                         this.ModContext.SteamId = SteamUploadItemId.ToString();
+                        this.Save();
                     }
 
                     this.ShowProgressMessage("Updating Steam Workshop item");

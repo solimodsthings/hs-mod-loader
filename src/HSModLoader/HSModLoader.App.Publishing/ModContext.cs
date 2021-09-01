@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App.Publishing
 {
+    /// <summary>
+    /// Represents the currently opened mod in the Mod Publisher.
+    /// </summary>
     public class ModContext : INotifyPropertyChanged
     {
         private Mod _Mod;
