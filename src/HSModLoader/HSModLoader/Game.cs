@@ -170,10 +170,34 @@ namespace HSModLoader
             return null;
         }
 
+        /// <summary>
+        /// Launches the Steam Workshop page within Steam itself.
+        /// </summary>
         public static void OpenSteamWorkshop()
         {
-            var p = new ProcessStartInfo("steam://url/SteamWorkshopPage/669500"){ UseShellExecute = true, Verb = "open" };
-            Process.Start(p);
+            try
+            {
+                var p = new ProcessStartInfo("steam://url/SteamWorkshopPage/669500") { UseShellExecute = true, Verb = "open" };
+                Process.Start(p);
+            }
+            catch(Exception e)
+            {
+                e.AppendToLogFile();
+            }
+        }
+
+        public static void OpenSteamWorkshopItem(ulong id)
+        {
+            try
+            {
+                var p = new ProcessStartInfo(string.Format("steam://url/CommunityFilePage/{0}", id)) { UseShellExecute = true, Verb = "open" };
+                Process.Start(p);
+            }
+            catch(Exception e)
+            {
+                e.AppendToLogFile();
+            }
+            
         }
 
     }
