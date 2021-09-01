@@ -327,9 +327,11 @@ namespace HSModLoader
             gameEngineConfig.Load();
 
             var relativePath = this.GetRelativeModStoragePath(configuration);
-            var hasAllPathsDefined = gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineContentPathKey, relativePath)
-                                     && gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineLocalizationPathKey, relativePath)
-                                     && gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineScriptPathKey, relativePath);
+            var hasContentPathDefined = gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineContentPathKey, relativePath);
+            var hasLocalizationPathDefined= gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineLocalizationPathKey, relativePath);
+            var hasScriptPathDefined = gameEngineConfig.IsIncluded(Game.EnginePathSection, Game.EngineScriptPathKey, relativePath);
+
+            var hasAllPathsDefined = hasContentPathDefined && hasLocalizationPathDefined && hasScriptPathDefined;
 
             // See if this mod has a mutator defined in RPGTacMods.ini...
             var mutatorConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToConfigurationsFolder, Game.MutatorConfigurationFile);

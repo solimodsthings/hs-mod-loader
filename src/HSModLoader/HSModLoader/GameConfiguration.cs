@@ -112,7 +112,7 @@ namespace HSModLoader
 
             if (section != null)
             {
-                if (section.Items.FirstOrDefault(x => x.Key == key && x.Value == value) != null)
+                if (section.Items.FirstOrDefault(x => x.Key.Equals(key) && x.Value.Equals(value)) != null)
                 {
                     return true;
                 }
