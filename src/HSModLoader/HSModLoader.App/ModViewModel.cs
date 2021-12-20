@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace HSModLoader.App
 {
@@ -20,6 +21,14 @@ namespace HSModLoader.App
             get
             {
                 return Configuration.OrderIndex + 1;
+            }
+        }
+
+        public ulong? SteamWorkshopId
+        {
+            get
+            {
+                return Configuration.Mod?.SteamWorkshopId ?? null;
             }
         }
 
@@ -42,6 +51,7 @@ namespace HSModLoader.App
         {
             get
             {
+                /*
                 if (this.Name.Length <= 32)
                 {
                     return this.Name;
@@ -50,6 +60,9 @@ namespace HSModLoader.App
                 {
                     return this.Name.Substring(0, 29) + "...";
                 }
+                */
+
+                return this.Name;
             }
         }
 
@@ -174,6 +187,37 @@ namespace HSModLoader.App
                 }
             }
         }
+
+        public string Compatibility
+        {
+            get
+            {
+                var result = string.Empty;
+
+                if(Configuration.Mod.CompatibleWithBaseGame)
+                {
+                    result = "Base game, ";
+                }
+
+                if (Configuration.Mod.CompatibleWithSrvGame)
+                {
+                    result += "Expansion";
+                }
+
+                if(result.EndsWith(", "))
+                {
+                    result = result.Substring(0, result.Length - 2);
+                }
+
+                if(string.IsNullOrEmpty(result))
+                {
+                    result = "Not Specified";
+                }
+
+                return result;
+            }
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
