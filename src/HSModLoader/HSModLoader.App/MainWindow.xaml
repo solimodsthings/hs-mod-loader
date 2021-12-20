@@ -15,12 +15,16 @@
         ContentRendered="OnWindowContentRendered"
         Closing="OnWindowClosing"
         Height="650" 
-        Width="900"
+        Width="1200"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <Style x:Key="InfoLabelHeaderStyle" TargetType="Label">
             <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style x:Key="InfoTextBlockValueStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         <Style x:Key="InfoLabelValueStyle" TargetType="Label">
             <Setter Property="FontWeight" Value="Normal"/>
@@ -82,10 +86,11 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding Order}" Header="Order" Width="75" />
-                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="240"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="75"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="100"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding RegistrationType}" Header="Type" Width="110"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="300"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="100"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="120"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding RegistrationType}" Header="Type" Width="120"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Compatibility}" Header="Compatibility" Width="200"/>
                         </GridView>
                     </ListView.View>
 
@@ -111,7 +116,7 @@
                     Apply Mods to Game
                 </Button>
                 <Button x:Name="ButtonLaunchgame" Grid.Column="3" Padding="4" Margin="4" Click="OnLaunchGameButtonClick" ToolTip="Launch Himeko Sutori">
-                    Launch Game
+                    Exit and Launch Game
                 </Button>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -129,20 +134,17 @@
 
                     <StackPanel x:Name="ModInfoPanel" Grid.Row="0">
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Name</Label>
-                        <Label x:Name="LabelModName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Name}"/>
-                        
+                        <TextBlock Padding="5,0,0,0" x:Name="LabelModName" Style="{StaticResource InfoTextBlockValueStyle}" Text="{Binding Name}"/>
+
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Version</Label>
                         <Label x:Name="LabelModVersion" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Version}"/>
                         
                         <Label Style="{StaticResource InfoLabelHeaderStyle}">Author</Label>
                         <Label x:Name="LabelAuthorName" Style="{StaticResource InfoLabelValueStyle}" Content="{Binding Author}"/>
 
-                        <Label x:Name="LabelSteamWorkshopPage" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="Collapsed">Steam</Label>
-                        <TextBlock x:Name="TextBlockSteamWorkshopPage" Padding="4,0,0,0" TextWrapping="Wrap" Visibility="Collapsed">
-                            <Hyperlink Click="OnSteamWorkshopPageLinkClick">
-                                <TextBlock Text="Go to Workshop Page" />
-                            </Hyperlink>
-                        </TextBlock>
+                        <Label x:Name="LabelVisitSteamPage" Style="{StaticResource InfoLabelHeaderStyle}">Steam</Label>
+                        <ui:HyperlinkButton Padding="5,0,0,0"  x:Name="HyperlinkVisitSteamPage" Click="OnVisitSteamPage" Margin="0,4,0,4" Content="Visit Workshop Page"></ui:HyperlinkButton>
+
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
@@ -172,7 +174,7 @@
                                              GroupName="ModState" />
                             </StackPanel>
                         </GroupBox>
-                        
+
                         <Button Click="OnMoveModOrderUp" Margin="0,4,0,4">Move Up</Button>
                         <Button Click="OnMoveModOrderDown"  Margin="0,4,0,4">Move Down</Button>
                         <Button x:Name="ButtonRemoveMod" Click="OnRemoveMod" Margin="0,4,0,4">Remove</Button>

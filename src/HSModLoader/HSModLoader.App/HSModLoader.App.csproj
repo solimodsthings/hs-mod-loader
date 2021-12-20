@@ -91,6 +91,7 @@
     <Compile Include="ConfirmationWindow.xaml.cs">
       <DependentUpon>ConfirmationWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ModConfigurationSnapshot.cs" />
     <Compile Include="ModViewModel.cs" />
     <Compile Include="GameFolderWindow.xaml.cs">
       <DependentUpon>GameFolderWindow.xaml</DependentUpon>

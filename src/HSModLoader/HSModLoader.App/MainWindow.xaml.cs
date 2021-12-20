@@ -65,6 +65,7 @@ namespace HSModLoader.App
             this.ModViewModels = new ObservableCollection<ModViewModel>();
             this.ListAvailableMods.ItemsSource = this.ModViewModels;
             this.RebuildModViewModels();
+            this.TakeModConfigurationSnapshot();
 
             this.SelectedMod = new ModViewModel(new ModConfiguration());
             this.ModInfoPanel.DataContext = this.SelectedMod;
@@ -76,6 +77,26 @@ namespace HSModLoader.App
                 this.ListAvailableMods.SelectedIndex = 0;
             }
 
+
+            var style = new Style();
+                        
+            style.TargetType = typeof(ListViewItem);
+            style.Setters.Add(new Setter(ListViewItem.ForegroundProperty, Brushes.Gray));
+
+            var trigger = new DataTrigger();
+            trigger.Binding = new Binding("State");
+            trigger.Value = "Enabled";
+            trigger.Setters.Add(new Setter(ListViewItem.ForegroundProperty, Brushes.Black));
+            style.Triggers.Add(trigger);
+
+            this.ExtendItemContainerStyle(style);
+
+        }
+
+        private void ExtendItemContainerStyle(Style style)
+        {
+            style.BasedOn = this.ListAvailableMods.ItemContainerStyle;
+            this.ListAvailableMods.ItemContainerStyle = style;
         }
 
         // The context menu for the main ListView is declared in XAML.
@@ -85,14 +106,12 @@ namespace HSModLoader.App
         private void InitializeContextMenuComponent()
         {
             var menu = this.ListAvailableMods.ContextMenu;
-            var originalStyle = this.ListAvailableMods.ItemContainerStyle;
 
             var style = new Style();
             style.TargetType = typeof(ListViewItem);
             style.Setters.Add(new Setter(ListViewItem.ContextMenuProperty, menu));
-            style.BasedOn = originalStyle;
 
-            this.ListAvailableMods.ItemContainerStyle = style;
+            this.ExtendItemContainerStyle(style);
             this.ListAvailableMods.ContextMenu = null;
         }
 
@@ -101,7 +120,8 @@ namespace HSModLoader.App
             this.ModViewModels.Clear();
             foreach (var mod in this.Manager.ModConfigurations)
             {
-                this.ModViewModels.Add(new ModViewModel(mod));
+                var vm = new ModViewModel(mod);
+                this.ModViewModels.Add(vm);
             }
         }
 
@@ -224,6 +244,17 @@ namespace HSModLoader.App
 
                     this.ButtonRemoveMod.IsEnabled = true;
                     this.ButtonRemoveMod.ToolTip = null;
+                }
+
+                if(this.SelectedMod.SteamWorkshopId != null)
+                {
+                    this.LabelVisitSteamPage.Visibility = Visibility.Visible;
+                    this.HyperlinkVisitSteamPage.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.LabelVisitSteamPage.Visibility = Visibility.Collapsed;
+                    this.HyperlinkVisitSteamPage.Visibility = Visibility.Collapsed;
                 }
 
             }
@@ -430,6 +461,7 @@ namespace HSModLoader.App
                 this.Manager.Save();
                 this.RefreshModList();
                 this.RefreshModInfoPanel();
+                this.TakeModConfigurationSnapshot();
             });
 
         }
@@ -452,7 +484,18 @@ namespace HSModLoader.App
             }
             else
             {
-                Process.Start(this.Manager.GetPathToGameExecutable());
+                // Process.Start(this.Manager.GetPathToGameExecutable());
+
+                if(this.HasUnappliedChanges())
+                {
+                    this.ShowMessage("Warning", "Apply your recent mod changes first before launching the game.");
+                }
+                else
+                {
+                    Game.StartGame();
+                    Application.Current.Shutdown();
+                }
+
             }
             
         }
@@ -595,5 +638,43 @@ namespace HSModLoader.App
 
             //}
         }
+
+        private void OnVisitSteamPage(object sender, RoutedEventArgs e)
+        {
+            var steamId = this.SelectedMod.SteamWorkshopId;
+
+            if(steamId != null && steamId.HasValue)
+            {
+                Game.OpenSteamWorkshopItem(steamId.Value);
+            }
+        }
+
+        private List<ModConfigurationSnapshot> ModConfigurationSnapshots { get; set; } = new List<ModConfigurationSnapshot>();
+
+        private void TakeModConfigurationSnapshot()
+        {
+            this.ModConfigurationSnapshots.Clear();
+            for(int i = 0; i < this.Manager.ModConfigurations.Count; i++)
+            {
+                this.ModConfigurationSnapshots.Add(new ModConfigurationSnapshot(this.Manager.ModConfigurations[i]));
+            }
+        }
+
+        private bool HasUnappliedChanges()
+        {
+            for (int i = 0; i < this.Manager.ModConfigurations.Count; i++)
+            {
+                var modConfiguration = this.Manager.ModConfigurations[i];
+                var snapshot = this.ModConfigurationSnapshots[i];
+
+                if(modConfiguration != snapshot.Mod || modConfiguration.OrderIndex != snapshot.OrderIndexSnapshot || modConfiguration.State != snapshot.ModStateSnapshot)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 }
