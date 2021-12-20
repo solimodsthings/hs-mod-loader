@@ -65,6 +65,8 @@ namespace HSModLoader
         /// </summary>
         public ulong? SteamWorkshopId { get; set; }
 
+        public bool CompatibleWithBaseGame { get; set; }
+        public bool CompatibleWithSrvGame { get; set; }
 
         /// <summary>
         /// Read-only property indicating whether this mod adds a new mutator.
