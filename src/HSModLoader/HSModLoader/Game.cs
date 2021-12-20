@@ -200,5 +200,18 @@ namespace HSModLoader
             
         }
 
+        public static void StartGame()
+        {
+            try
+            {
+                var p = new ProcessStartInfo(string.Format("steam://run/669500")) { UseShellExecute = true, Verb = "open" };
+                Process.Start(p);
+            }
+            catch (Exception e)
+            {
+                e.AppendToLogFile();
+            }
+        }
+
     }
 }
