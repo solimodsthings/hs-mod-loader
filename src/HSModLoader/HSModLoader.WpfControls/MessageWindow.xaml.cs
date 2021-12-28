@@ -33,6 +33,11 @@ namespace HSModLoader.WpfControls
 
         }
 
+        public void SetCancelButtonText(string text)
+        {
+            this.ButtonCancel.Content = text;
+        }
+
         private void OnOkButtonClicked(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
