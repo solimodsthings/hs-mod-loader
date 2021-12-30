@@ -41,10 +41,12 @@ namespace HSModLoader.App.Publishing
         private ulong SteamUploadItemId { get; set; }
         private bool SteamSubmissionFinished { get; set; }
         private bool SteamSubmissionSuccessful { get; set; }
+        private DateTime LastAccessedCompatibilityInformation { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
+
             this.ModContext = new ModContext();
             this.ModDirectoryWatcher = new FileSystemWatcher();
             this.ModDirectoryWatcher.Created += OnFilesChanged;
@@ -58,6 +60,8 @@ namespace HSModLoader.App.Publishing
             this.SteamApiThread.WorkerSupportsCancellation = true;
 
             this.DataContext = this.ModContext;
+
+            this.LastAccessedCompatibilityInformation = DateTime.Now;
         }
 
         #region Overlay
@@ -526,6 +530,15 @@ namespace HSModLoader.App.Publishing
                                 this.ShowPopupMessage("Success", "Successfully uploaded your mod as a new Steam Workshop item!"
                                     + " Visit your new workshop item in Steam to add screenshots.", false);
                             }
+
+                            var ConfirmOpenSteam = new MessageWindow("Steam Workshop", "Would you like to visit your mod's Steam Workshop page?", true);
+                            ConfirmOpenSteam.Owner = this;
+                            ConfirmOpenSteam.SetCancelButtonText("Not Right Now");
+
+                            if(ConfirmOpenSteam.ShowDialog() == true)
+                            {
+                                Game.OpenSteamWorkshopItem(mod.SteamWorkshopId.Value);
+                            }
                         }
                     });
                     
@@ -606,6 +619,19 @@ namespace HSModLoader.App.Publishing
 
                 Thread.Sleep(1000);
             }
+        }
+
+        
+
+        private void OnCompatilityInfoClick(object sender, RoutedEventArgs e)
+        {
+            // Bit of a hack as the hyperlink click event keeps firing twice
+            if((DateTime.Now - LastAccessedCompatibilityInformation).TotalSeconds > 1)
+            {
+                this.ShowPopupMessage("Compatibility Information", "Setting compatibility through the Mod Publisher only affects the Steam Workshop item. If your mod has custom code, remember to set intended game types within your mutator.", true);
+                LastAccessedCompatibilityInformation = DateTime.Now;
+            }
+            
         }
     }
 }

@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 /src/HSModLoader/HSModLoader.App.Publishing/steam_api64.dll
 /src/HSModLoader/HSModLoader.App.Publishing/Steamworks.NET.dll
+/src/HSModLoader/HSModLoader.App.Publishing/steam_appid.txt

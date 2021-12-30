@@ -86,6 +86,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="20"/>
@@ -118,11 +119,26 @@
                     <Label  Grid.Row="6" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Description</Label>
                     <TextBox Grid.Row="6" Grid.Column="2" Margin="0,4,0,4" AcceptsReturn="True" AcceptsTab="True" TextWrapping="WrapWithOverflow"  Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
 
-                    <Label Grid.Row="7" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
-                    <TextBox Grid.Row="7" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=ModId}"></TextBox>
+                    <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal">
+                        <Label Style="{StaticResource InfoLabelHeaderStyle}">
+                            Compatibility
+                        </Label>
+                        <ui:HyperlinkButton VerticalAlignment="Center" ClickMode="Release" Click="OnCompatilityInfoClick" Margin="0,4,8,4">
+                            ?
+                        </ui:HyperlinkButton>
+                    </StackPanel>
 
-                    <Label  Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
-                    <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>
+                    <StackPanel Grid.Row="7" Grid.Column="2" Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithBaseGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,12,4">Main Campaign</CheckBox>
+                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithSrvGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,4,4">Expansion</CheckBox>
+                        
+                    </StackPanel>
+                                        
+                    <Label Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
+                    <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=ModId}"></TextBox>
+
+                    <Label  Grid.Row="9" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
+                    <TextBox Grid.Row="9" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>
 
                 </Grid>
             </GroupBox>

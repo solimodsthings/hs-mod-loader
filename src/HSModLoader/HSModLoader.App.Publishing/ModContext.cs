@@ -217,6 +217,32 @@ namespace HSModLoader.App.Publishing
             }
         }
 
+        public bool IsCompatibleWithBaseGame
+        {
+            get
+            {
+                return Mod == null ? false : Mod.CompatibleWithBaseGame;
+            }
+            set
+            {
+                Mod.CompatibleWithBaseGame = value;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        public bool IsCompatibleWithSrvGame
+        {
+            get
+            {
+                return Mod == null ? false : Mod.CompatibleWithSrvGame;
+            }
+            set
+            {
+                Mod.CompatibleWithSrvGame = value;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void NotifyPropertyChangedEventHandlers()
