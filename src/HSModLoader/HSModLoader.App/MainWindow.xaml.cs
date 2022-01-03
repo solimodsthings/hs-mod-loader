@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using HSModLoader;
 using HSModLoader.WpfControls;
 using Microsoft.Win32;
@@ -492,8 +493,38 @@ namespace HSModLoader.App
                 }
                 else
                 {
-                    Game.StartGame();
-                    Application.Current.Shutdown();
+
+                    this.ShowDarkOverlay(true);
+                    this.ShowProgressRing(true);
+
+                    this.TextboxProgress.Text = "This app is closing...";
+                    this.TextboxProgress.Visibility = Visibility.Visible;
+                    
+
+                    // Running the game executable directly is more desirable than using the
+                    // Steam protocol to start the game because using the protocol makes
+                    // Steam think we are launching the same game twice and complain about
+                    // not being able to sync files to the Steam Cloud properly.
+
+                    // Game.StartGame();
+                    Process.Start(this.Manager.GetPathToGameExecutable());
+
+                    // We want to keep the mod loader up for a few seconds as the game
+                    // normally does not launch instantly. This way the player knows there
+                    // is something still loading...
+                    var timer = new System.Timers.Timer();
+                    timer.Interval = 10 * 1000;
+                    timer.Elapsed += (_, __) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            Application.Current.Shutdown();
+                        });
+                        
+                    };
+
+                    timer.AutoReset = false;
+                    timer.Enabled = true;
                 }
 
             }
