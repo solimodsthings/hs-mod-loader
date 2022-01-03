@@ -11,7 +11,7 @@
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
         Closing="OnWindowClosing"
         Icon="pack://application:,,,/HSModLoader.App.Publishing;component/Resources/WindowIcon-PublishingTool.ico"
-        Title="Himeko Sutori Mod Publishing Tool" 
+        Title="Himeko Sutori Mod Publisher" 
         Height="650" 
         Width="900"
         WindowStartupLocation="CenterScreen">
@@ -55,7 +55,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock x:Name="TextBlockAppTitle" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13" Foreground="White" Padding="4,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Himeko Sutori Mod Publishing Tool" />
+            <TextBlock x:Name="TextBlockAppTitle" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13" Foreground="White" Padding="4,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Himeko Sutori Mod Publisher" />
             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
                 <ui:TitleBarButton x:Name="ForwardButton" Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE710;" ToolTip="New" Click="OnNewModButtonClick"/>
                 <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE8B7;" ToolTip="Open" Click="OnOpenModButtonClick"/>

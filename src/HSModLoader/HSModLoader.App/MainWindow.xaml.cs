@@ -497,7 +497,7 @@ namespace HSModLoader.App
                     this.ShowDarkOverlay(true);
                     this.ShowProgressRing(true);
 
-                    this.TextboxProgress.Text = "This app is closing...";
+                    this.TextboxProgress.Text = "Exiting mod loader...";
                     this.TextboxProgress.Visibility = Visibility.Visible;
                     
 

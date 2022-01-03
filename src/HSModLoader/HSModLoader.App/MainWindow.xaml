@@ -10,7 +10,7 @@
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
         x:Name="WindowMain"
-        Title="Himeko Sutori Mod Manager" 
+        Title="Himeko Sutori Mod Loader" 
         Icon="pack://application:,,,/HSModLoader.App;component/Resources/WindowIcon.ico"
         ContentRendered="OnWindowContentRendered"
         Closing="OnWindowClosing"
@@ -58,7 +58,7 @@
                 Padding="4,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Text="Himeko Sutori Mod Manager" />
+                Text="Himeko Sutori Mod Loader" />
 
         </Grid>
 
