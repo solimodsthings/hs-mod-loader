@@ -196,12 +196,12 @@ namespace HSModLoader.App
 
                 if(Configuration.Mod.CompatibleWithBaseGame)
                 {
-                    result = "Base game, ";
+                    result = "Official Campaign, ";
                 }
 
                 if (Configuration.Mod.CompatibleWithSrvGame)
                 {
-                    result += "Expansion";
+                    result += "Septaroad Voyager";
                 }
 
                 if(result.EndsWith(", "))

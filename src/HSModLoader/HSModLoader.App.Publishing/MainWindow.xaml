@@ -129,9 +129,8 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="7" Grid.Column="2" Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithBaseGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,12,4">Main Campaign</CheckBox>
-                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithSrvGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,4,4">Expansion</CheckBox>
-                        
+                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithBaseGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,12,4">Official Campaign</CheckBox>
+                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithSrvGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,4,4">Septaroad Voyager</CheckBox>
                     </StackPanel>
                                         
                     <Label Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>

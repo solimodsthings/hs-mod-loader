@@ -86,11 +86,11 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding Order}" Header="Order" Width="75" />
-                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="300"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding TruncatedName}" Header="Name" Width="260"/>
                             <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="100"/>
                             <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="120"/>
                             <GridViewColumn DisplayMemberBinding="{Binding RegistrationType}" Header="Type" Width="120"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding Compatibility}" Header="Compatibility" Width="200"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Compatibility}" Header="Compatibility" Width="250"/>
                         </GridView>
                     </ListView.View>
 
