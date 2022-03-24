@@ -283,6 +283,29 @@ namespace HSModLoader.App.Publishing
             this.ModContext.Mod = mod;
             this.ModContext.Directory = directory;
             this.ModDirectoryWatcher.Path = directory;
+
+            // TODO: Revisit method of setting initial dropbox values
+            if (this.ModContext.IsCampaign)
+            {
+                this.ComboBoxModType.SelectedIndex = 2;
+
+                for(int i = 0; i < this.ComboBoxCampaignGameType.Items.Count; i++)
+                {
+                    if (this.ModContext.CampaignGameType == ((ComboBoxItem)this.ComboBoxCampaignGameType.Items[i]).Content.ToString())
+                    {
+                        this.ComboBoxCampaignGameType.SelectedIndex = i;
+                    }
+                }
+            }
+            else if (this.ModContext.IsCompatibleWithSrvGame)
+            {
+                this.ComboBoxModType.SelectedIndex = 1;
+            }
+            else if (this.ModContext.IsCompatibleWithBaseGame)
+            {
+                this.ComboBoxModType.SelectedIndex = 0;
+            }
+            
             this.RefreshFiles();
         }
 
@@ -623,7 +646,7 @@ namespace HSModLoader.App.Publishing
 
         
 
-        private void OnCompatilityInfoClick(object sender, RoutedEventArgs e)
+        private void OnCompatibilityInfoClick(object sender, RoutedEventArgs e)
         {
             // Bit of a hack as the hyperlink click event keeps firing twice
             if((DateTime.Now - LastAccessedCompatibilityInformation).TotalSeconds > 1)
@@ -632,6 +655,46 @@ namespace HSModLoader.App.Publishing
                 LastAccessedCompatibilityInformation = DateTime.Now;
             }
             
+        }
+
+        private void OnCampaignCheckBoxChange(object sender, RoutedEventArgs e)
+        {
+            if(this.ModContext.IsCampaign)
+            {
+                this.ComboBoxCampaignGameType.SelectedIndex = 0;
+            }
+            else
+            {
+                this.ComboBoxCampaignGameType.SelectedIndex = -1;
+            }
+            
+        }
+
+        private void ComboBoxModType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selection = ((ComboBoxItem)this.ComboBoxModType.SelectedItem).Content.ToString();
+
+            this.ModContext.IsCompatibleWithBaseGame = false;
+            this.ModContext.IsCompatibleWithSrvGame = false;
+            this.ModContext.IsCampaign = false;
+
+            if (selection == "Base Game Mod")
+            {
+                this.ModContext.IsCompatibleWithBaseGame = true;
+            }
+            else if(selection == "Septaroad Voyager Mod")
+            {
+                this.ModContext.IsCompatibleWithSrvGame = true;
+            }
+            else if(selection == "New Campaign")
+            {
+                this.ModContext.IsCampaign = true;
+            }
+        }
+
+        private void ComboBoxCampaignGameType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.ModContext.CampaignGameType = ((ComboBoxItem)this.ComboBoxCampaignGameType.SelectedItem).Content.ToString();
         }
     }
 }

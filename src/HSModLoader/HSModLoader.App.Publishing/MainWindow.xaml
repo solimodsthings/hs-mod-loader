@@ -12,8 +12,8 @@
         Closing="OnWindowClosing"
         Icon="pack://application:,,,/HSModLoader.App.Publishing;component/Resources/WindowIcon-PublishingTool.ico"
         Title="Himeko Sutori Mod Publisher" 
-        Height="650" 
-        Width="900"
+        Height="600" 
+        Width="1000"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -65,85 +65,169 @@
 
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="0" x:Name="InfoPanel" IsEnabled="False" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="23*"/>
-                <ColumnDefinition Width="569*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1" Grid.Column="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        
+            <Grid x:Name="InfoPanel" IsEnabled="False" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="23*"/>
+                    <ColumnDefinition Width="569*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <GroupBox Grid.Row="0" Header="Mod Package Information" Margin="16" Grid.ColumnSpan="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                <GroupBox Grid.Row="0" Header="Mod Package Information" Margin="16" Grid.ColumnSpan="2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod Name</Label>
+                        <TextBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="1" Margin="0,4,0,4" Text="{Binding Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                            <Label Style="{StaticResource InfoLabelHeaderStyle}" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                Mod Type
+                            </Label>
+                            <ui:HyperlinkButton ClickMode="Release" Click="OnCompatibilityInfoClick" Margin="0,4,8,4" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                ?
+                            </ui:HyperlinkButton>
+                        </StackPanel>
+                        <ComboBox x:Name="ComboBoxModType" Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="1" VerticalAlignment="Center" 
+                                  SelectionChanged="ComboBoxModType_SelectionChanged">
+                            <ComboBoxItem Content="Base Game Mod"/>
+                            <ComboBoxItem Content="Septaroad Voyager Mod"/>
+                            <ComboBoxItem Content="New Campaign"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Version</Label>
+                        <TextBox Grid.Row="1" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=Version, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+
+                        <Label Grid.Row="1" Grid.Column="3" Style="{StaticResource InfoLabelHeaderStyle}" HorizontalAlignment="Right" >Author</Label>
+                        <TextBox Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="1" Margin="0,4,0,4"
+                                 Text="{Binding Path=Author, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <CheckBox Grid.Row="2" Grid.Column="0" x:Name="HasAuthorUrl" IsChecked="{Binding Path=HasAuthorUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <Label  Grid.Row="2" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Author URL</Label>
+                        <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,4,0,4" Text="{Binding Path=AuthorUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasAuthorUrl}"></TextBox>
+
+                        <CheckBox Grid.Row="3" Grid.Column="0" x:Name="HasModUrl" IsChecked="{Binding Path=HasModUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <Label  Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod URL</Label>
+                        <TextBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,4,0,4" Text="{Binding Path=ModUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasModUrl}"></TextBox>
 
 
-                    <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod Name</Label>
-                    <TextBox Grid.Row="0" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Grid.Row="4" Grid.Column="0" x:Name="HasMutatorClass" IsChecked="{Binding Path=HasMutatorClass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+                        <Label Grid.Row="4" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mutator Class</Label>
+                        <TextBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="4" Margin="0,4,0,4" Text="{Binding Path=MutatorClass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasMutatorClass}"></TextBox>
 
-                    <Label Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Version</Label>
-                    <TextBox Grid.Row="1" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=Version, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                        <!-- Original compatibility checkboxes
+                        <StackPanel Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="4" Orientation="Horizontal" Margin="0,0,0,0">
+                            <CheckBox IsChecked="{Binding Path=IsCompatibleWithBaseGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,0">Base Campaign</CheckBox>
+                            <CheckBox IsChecked="{Binding Path=IsCompatibleWithSrvGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="8,0,0,0">Septaroad Voyager</CheckBox>
+                            <CheckBox IsChecked="{Binding Path=IsCampaign, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="8,0,0,0" Checked="OnCampaignCheckBoxChange" Unchecked="OnCampaignCheckBoxChange" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                                New Campaign
+                            </CheckBox>
+                        </StackPanel>
+                        -->
 
-                    <Label Grid.Row="2" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Author</Label>
-                    <TextBox Grid.Row="2" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=Author, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-
-                    <CheckBox Grid.Row="3" Grid.Column="0" x:Name="HasModUrl" IsChecked="{Binding Path=HasModUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label  Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod URL</Label>
-                    <TextBox Grid.Row="3" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=ModUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasModUrl}"></TextBox>
-
-                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="HasAuthorUrl" IsChecked="{Binding Path=HasAuthorUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label  Grid.Row="4" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Author URL</Label>
-                    <TextBox Grid.Row="4" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=AuthorUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasAuthorUrl}"></TextBox>
-
-                    <CheckBox Grid.Row="5" Grid.Column="0" x:Name="HasMutatorClass" IsChecked="{Binding Path=HasMutatorClass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label Grid.Row="5" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mutator Class</Label>
-                    <TextBox Grid.Row="5" Grid.Column="2" Margin="0,4,0,4" Text="{Binding Path=MutatorClass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=HasMutatorClass}"></TextBox>
-
-                    <Label  Grid.Row="6" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Description</Label>
-                    <TextBox Grid.Row="6" Grid.Column="2" Margin="0,4,0,4" AcceptsReturn="True" AcceptsTab="True" TextWrapping="WrapWithOverflow"  Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-
-                    <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal">
-                        <Label Style="{StaticResource InfoLabelHeaderStyle}">
-                            Compatibility
+                        <Label Grid.Row="5" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=CampaignFieldsVisibility}">
+                            <TextBlock>
+                                Campaign <LineBreak/>
+                                Title
+                            </TextBlock>
                         </Label>
-                        <ui:HyperlinkButton VerticalAlignment="Center" ClickMode="Release" Click="OnCompatilityInfoClick" Margin="0,4,8,4">
-                            ?
-                        </ui:HyperlinkButton>
-                    </StackPanel>
 
-                    <StackPanel Grid.Row="7" Grid.Column="2" Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithBaseGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,12,4">Official Campaign</CheckBox>
-                        <CheckBox IsChecked="{Binding Path=IsCompatibleWithSrvGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,4,4">Septaroad Voyager</CheckBox>
-                    </StackPanel>
-                                        
-                    <Label Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
-                    <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=ModId}"></TextBox>
+                        <TextBox Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="1" Margin="0,4,0,4" VerticalAlignment="Center" 
+                                 Text="{Binding Path=CampaignName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 IsEnabled="{Binding Path=IsCampaign}"
+                                 Visibility="{Binding Path=CampaignFieldsVisibility}"/>
 
-                    <Label  Grid.Row="9" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
-                    <TextBox Grid.Row="9" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>
+                        <Label Grid.Row="5" Grid.Column="3" HorizontalAlignment="Right" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=CampaignFieldsVisibility}">
+                            <TextBlock TextAlignment="Right">
+                                Campaign <LineBreak/>
+                                Prefix
+                            </TextBlock>
+                        </Label>
 
-                </Grid>
-            </GroupBox>
+                        <TextBox Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="2" Margin="0,4,0,4" VerticalAlignment="Center" 
+                                 Text="{Binding Path=CampaignPrefix, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 IsEnabled="{Binding Path=IsCampaign}"
+                                 Visibility="{Binding Path=CampaignFieldsVisibility}"/>
 
-        </Grid>
+                        <Label Grid.Row="6" Grid.Column="3" HorizontalAlignment="Right" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=CampaignFieldsVisibility}">
+                            <TextBlock TextAlignment="Right">
+                                Campaign<LineBreak/>
+                                Game Type
+                            </TextBlock>
+                        </Label>
 
+                        <ComboBox x:Name="ComboBoxCampaignGameType" Grid.Row="6" Grid.Column="4" Grid.ColumnSpan="3" VerticalAlignment="Center" 
+                                  IsEnabled="{Binding Path=IsCampaign}" 
+                                  Visibility="{Binding Path=CampaignFieldsVisibility}"
+                                  SelectionChanged="ComboBoxCampaignGameType_SelectionChanged">
+                            <ComboBoxItem Content="RPGTacGame.RPGTacGame"/>
+                            <ComboBoxItem Content="SRVGame.SRVGameInfo"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="6" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=CampaignFieldsVisibility}">
+                            <TextBlock>
+                                Campaign <LineBreak/>
+                                Base Level
+                            </TextBlock>
+                        </Label>
+
+                        <TextBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" Margin="0,4,0,4" VerticalAlignment="Center" 
+                                 Text="{Binding Path=CampaignBaseLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 IsEnabled="{Binding Path=IsCampaign}"
+                                 Visibility="{Binding Path=CampaignFieldsVisibility}"/>
+
+                        <Label  Grid.Row="7" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=DescriptionFieldVisibility}">Description</Label>
+                        <TextBox Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,4,0,4" AcceptsReturn="True" AcceptsTab="True" 
+                                 TextWrapping="WrapWithOverflow"  
+                                 Visibility="{Binding Path=DescriptionFieldVisibility}"
+                                 Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <Label Grid.Row="7" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}" Visibility="{Binding Path=CampaignFieldsVisibility}">
+                            <TextBlock>
+                                Campaign <LineBreak/>
+                                Description
+                            </TextBlock>
+                        </Label>
+
+                        <TextBox Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="4" Margin="0,4,0,4" 
+                                 Text="{Binding Path=CampaignDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 IsEnabled="{Binding Path=IsCampaign}" 
+                                 Visibility="{Binding Path=CampaignFieldsVisibility}"
+                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible"/>
+
+                        <Label Grid.Row="8" Grid.Column="1" Style="{StaticResource InfoLabelHeaderStyle}">Mod ID</Label>
+                        <TextBox Grid.Row="8" Grid.Column="2" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxModId" Text="{Binding Path=ModId}"></TextBox>
+
+                        <Label Grid.Row="8" Grid.Column="3" HorizontalAlignment="Right" Style="{StaticResource InfoLabelHeaderStyle}">Steam ID</Label>
+                        <TextBox Grid.Row="8" Grid.Column="4" Margin="0,4,0,4" IsEnabled="False" x:Name="TextBoxSteamId"  Text="{Binding Path=SteamId}"></TextBox>
+
+                    </Grid>
+                </GroupBox>
+
+            </Grid>
+
+        </ScrollViewer>
+        
         <Grid x:Name="FileListPanel" IsEnabled="false" Grid.Row="1" Grid.Column="1" Background="#DDD">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
@@ -155,7 +239,6 @@
             </Grid.ColumnDefinitions>
 
             <GroupBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Header="Mod Files"  Margin="16" >
-
                 <ListView x:Name="ListViewFiles" SelectionMode="Single" VirtualizingPanel.VirtualizationMode="Recycling">
 
                     <ListView.View>
@@ -170,7 +253,7 @@
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Padding="4" Margin="4" Content="Open Directory" Click="OnOpenDirectoryButtonClick"/>
             </StackPanel>
-            
+
         </Grid>
 
         <Canvas x:Name="CanvasFadeOut" Panel.ZIndex="100" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Black" Opacity="0.5" Visibility="Collapsed"/>
