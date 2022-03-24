@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace HSModLoader.App.Publishing
 {
@@ -243,11 +244,133 @@ namespace HSModLoader.App.Publishing
             }
         }
 
+        public bool IsCampaign
+        {
+            get
+            {
+                return Mod == null ? false : Mod.IsCampaign;
+            }
+            set
+            {
+                Mod.IsCampaign = value;
+                NotifyPropertyChangedEventHandlers();
+
+
+                if (!value)
+                {
+                    this.CampaignName = null;
+                    this.CampaignPrefix = null;
+                    this.CampaignDescription = null;
+                    this.CampaignBaseLevel = null;
+                    this.CampaignGameType = null;
+                }
+            }
+        }
+
+
+        public string CampaignName
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.CampaignName;
+            }
+            set
+            {
+                Mod.CampaignName = !string.IsNullOrEmpty(value) ? value : null;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        public string CampaignDescription
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.CampaignDescription;
+            }
+            set
+            {
+                Mod.CampaignDescription = !string.IsNullOrEmpty(value) ? value : null;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        public string CampaignPrefix
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.CampaignPrefix;
+            }
+            set
+            {
+                Mod.CampaignPrefix = !string.IsNullOrEmpty(value) ? value : null;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        public string CampaignGameType
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.CampaignGameType;
+            }
+            set
+            {
+                Mod.CampaignGameType = !string.IsNullOrEmpty(value) ? value : null;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        public string CampaignBaseLevel
+        {
+            get
+            {
+                return Mod == null ? string.Empty : Mod.CampaignBaseLevel;
+            }
+            set
+            {
+                Mod.CampaignBaseLevel = !string.IsNullOrEmpty(value) ? value : null;
+                NotifyPropertyChangedEventHandlers();
+            }
+        }
+
+        
+        public Visibility CampaignFieldsVisibility
+        {
+            get
+            {
+                if(this.IsCampaign)
+                {
+                    return Visibility.Visible;
+                }
+                else
+                {
+                    return Visibility.Collapsed;
+                }
+            }
+            
+        }
+
+        public Visibility DescriptionFieldVisibility
+        {
+            get
+            {
+                if (this.IsCampaign)
+                {
+                    return Visibility.Collapsed;
+                }
+                else
+                {
+                    return Visibility.Visible;
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void NotifyPropertyChangedEventHandlers()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         }
+
     }
 }
