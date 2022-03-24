@@ -65,8 +65,17 @@ namespace HSModLoader
         /// </summary>
         public ulong? SteamWorkshopId { get; set; }
 
-        public bool CompatibleWithBaseGame { get; set; }
+        // v1.2
+        public bool CompatibleWithBaseGame { get; set; } //aka RPGTacGame
         public bool CompatibleWithSrvGame { get; set; }
+
+        // v1.3
+        public bool IsCampaign { get; set; }
+        public string CampaignName { get; set; }
+        public string CampaignPrefix { get; set; }
+        public string CampaignDescription { get; set; }
+        public string CampaignBaseLevel { get; set; }
+        public string CampaignGameType { get; set; }
 
         /// <summary>
         /// Read-only property indicating whether this mod adds a new mutator.
@@ -92,6 +101,8 @@ namespace HSModLoader
                 return this.SteamWorkshopId != null;
             }
         }
+
+        
 
     }
 }
