@@ -81,7 +81,7 @@ namespace HSModLoader.App.Publishing
                 return;
             }
 
-            this.ResultMod = new Mod() { Name = modName };
+            this.ResultMod = new Mod() { Name = modName, CompatibleWithBaseGame = true }; // Base game mod by default
             this.ResultModParentFolder = parentFolder;
             this.DialogResult = true;
             this.Close();
