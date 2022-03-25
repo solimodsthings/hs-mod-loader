@@ -690,11 +690,30 @@ namespace HSModLoader.App.Publishing
             {
                 this.ModContext.IsCampaign = true;
             }
+
+            if (selection != "New Campaign")
+            {
+                this.ModContext.CampaignName = null;
+                this.ModContext.CampaignPrefix = null;
+                this.ModContext.CampaignDescription = null;
+                this.ModContext.CampaignBaseLevel = null;
+                //this.ModContext.CampaignGameType = null;
+                this.ComboBoxCampaignGameType.SelectedIndex = -1;
+            }
+
         }
 
         private void ComboBoxCampaignGameType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.ModContext.CampaignGameType = ((ComboBoxItem)this.ComboBoxCampaignGameType.SelectedItem).Content.ToString();
+            if(this.ComboBoxCampaignGameType.SelectedIndex >= 0)
+            {
+                this.ModContext.CampaignGameType = ((ComboBoxItem)this.ComboBoxCampaignGameType.SelectedItem).Content.ToString();
+            }
+            else
+            {
+                this.ModContext.CampaignGameType = null;
+            }
+            
         }
     }
 }

@@ -254,16 +254,6 @@ namespace HSModLoader.App.Publishing
             {
                 Mod.IsCampaign = value;
                 NotifyPropertyChangedEventHandlers();
-
-
-                if (!value)
-                {
-                    this.CampaignName = null;
-                    this.CampaignPrefix = null;
-                    this.CampaignDescription = null;
-                    this.CampaignBaseLevel = null;
-                    this.CampaignGameType = null;
-                }
             }
         }
 
