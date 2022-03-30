@@ -40,6 +40,13 @@ namespace HSModLoader
         public static readonly string RelativePathToConfigurationsFolder = @"RPGTacGame\Config";
 
         /// <summary>
+        /// Relative to game root folder. This folder contains .ini files.
+        /// </summary>
+        public static readonly string RelativePathToEnglishLocalizationFolder = @"RPGTacGame\Localization\INT";
+
+        public static readonly string CampaignLocalizationFile = "RPGTacGame.int";
+
+        /// <summary>
         /// Relative to game root folder. Used for Steam Workshop integration.
         /// </summary>
         public static readonly string RelativePathToSteamModsFolder = @"..\..\workshop\content\669500";
