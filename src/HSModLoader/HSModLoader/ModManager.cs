@@ -619,6 +619,7 @@ namespace HSModLoader
             {
                 
                 this.UpdateMutatorIniFile();
+                this.UpdateCampaignLocalizationFile();
                 var update = this.UpdateGameEngineIniFile();
 
                 if(!update.IsSuccessful)
@@ -643,6 +644,66 @@ namespace HSModLoader
             this.FileChangesLog.End();
 
             return result;
+        }
+
+        /// <summary>
+        /// Note that for the game, the campaign list is defined in a localization (!) file.
+        /// Thankfully, the localization file has the same format as a .ini file.
+        /// </summary>
+        private void UpdateCampaignLocalizationFile()
+        {
+            var campaignConfigPath = Path.Combine(this.GameFolderPath, Game.RelativePathToEnglishLocalizationFolder, Game.CampaignLocalizationFile);
+            var campaignConfigPathBackup = campaignConfigPath + ".backup";
+
+            if (!File.Exists(campaignConfigPathBackup))
+            {
+                this.FileChangesLog.Record("Creating backup of campaign localization file.");
+                File.Copy(campaignConfigPath, campaignConfigPathBackup);
+            }
+
+            var campaignConfig = new CampaignConfiguration(campaignConfigPath);
+            campaignConfig.Load();
+
+            var mainCampaign = campaignConfig.Campaigns.FirstOrDefault(x => x.Prefix == "Main");
+            var srvCampaign = campaignConfig.Campaigns.FirstOrDefault(x => x.Prefix == "SRV");
+
+            if(mainCampaign == null || srvCampaign == null)
+            {
+                this.FileChangesLog.Record("The campaign list has been modified and does not contain the main or SRV campaign.");
+            }
+
+            campaignConfig.Campaigns.Clear();
+
+            if (mainCampaign != null)
+            {
+                campaignConfig.Campaigns.Add(mainCampaign);
+            }
+            
+            if(srvCampaign != null)
+            {
+                campaignConfig.Campaigns.Add(srvCampaign);
+            }
+
+            foreach (var config in this.ModConfigurations)
+            {
+                if(config.Mod.IsCampaign && config.State == ModState.Enabled)
+                {
+                    var c = new Campaign()
+                    {
+                        Name = config.Mod.CampaignName,
+                        Description = config.Mod.Description,
+                        BaseLevel = config.Mod.CampaignBaseLevel,
+                        Prefix = config.Mod.CampaignPrefix,
+                        GameType = config.Mod.CampaignGameType
+                    };
+
+                    campaignConfig.Campaigns.Add(c);
+
+                }
+            }
+
+            campaignConfig.Save();
+            this.FileChangesLog.Record("Updated campaign localization file to reflect enabled custom campaigns");
         }
 
         /// <summary>
