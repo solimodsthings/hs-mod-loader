@@ -341,13 +341,32 @@ namespace HSModLoader.App.Publishing
 
             var mod = this.ModContext.Mod;
 
-            // The constraint on Description is a requirement for Steam only, but we might
-            // as well enforce it for standalone mods too
-            if (string.IsNullOrEmpty(this.ModContext.Name) || string.IsNullOrEmpty(this.ModContext.Description))
+            if(this.ModContext.IsCampaign)
             {
-                this.ShowPopupMessage("Warning", "Cannot publish a mod with a missing name or description.");
-                return;
+                if (string.IsNullOrEmpty(this.ModContext.CampaignName) 
+                    || string.IsNullOrEmpty(this.ModContext.CampaignDescription)
+                    || string.IsNullOrEmpty(this.ModContext.CampaignBaseLevel)
+                    || string.IsNullOrEmpty(this.ModContext.CampaignGameType)
+                    || string.IsNullOrEmpty(this.ModContext.CampaignPrefix))
+                {
+                    this.ShowPopupMessage("Warning", "Cannot publish a campaign with any of name, description, base level, game type, or prefix missing.");
+                    return;
+                }
+
+                this.ModContext.Description = this.ModContext.CampaignDescription;
             }
+            else
+            {
+                // The constraint on Description is a requirement for Steam only, but we might
+                // as well enforce it for standalone mods too
+                if (string.IsNullOrEmpty(this.ModContext.Name) || string.IsNullOrEmpty(this.ModContext.Description))
+                {
+                    this.ShowPopupMessage("Warning", "Cannot publish a mod with a missing name or description.");
+                    return;
+                }
+            }
+
+            
 
             if (string.IsNullOrEmpty(this.ModContext.Author) || string.IsNullOrEmpty(this.ModContext.Description))
             {
