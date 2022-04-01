@@ -51,16 +51,30 @@ namespace HSModLoader.App
                 this.ShowMessage("Warning", result.ErrorMessage);
             }
 
-            this.SteamWorkshopDirectoryWatcher = new FileSystemWatcher();
-            this.SteamWorkshopDirectoryWatcher.IncludeSubdirectories = true;
-            this.SteamWorkshopDirectoryWatcher.Filter = Mod.InfoFile;
-            this.SteamWorkshopDirectoryWatcher.Created += OnSteamWorkshopDirectoryChanged;
-            this.SteamWorkshopDirectoryWatcher.Deleted += OnSteamWorkshopDirectoryChanged;
-
-            if (!string.IsNullOrEmpty(this.Manager.GameFolderPath))
+            try
             {
-                this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
-                this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+                this.SteamWorkshopDirectoryWatcher = new FileSystemWatcher();
+                this.SteamWorkshopDirectoryWatcher.IncludeSubdirectories = true;
+                this.SteamWorkshopDirectoryWatcher.Filter = Mod.InfoFile;
+                this.SteamWorkshopDirectoryWatcher.Created += OnSteamWorkshopDirectoryChanged;
+                this.SteamWorkshopDirectoryWatcher.Deleted += OnSteamWorkshopDirectoryChanged;
+
+                if (!string.IsNullOrEmpty(this.Manager.GameFolderPath))
+                {
+                    this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
+                    this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+                }
+            }
+            catch(Exception e)
+            {
+                e.AppendToLogFile();
+            }
+            finally
+            {
+                if(this.SteamWorkshopDirectoryWatcher != null)
+                {
+                    this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = false;
+                }
             }
 
             this.ModViewModels = new ObservableCollection<ModViewModel>();
@@ -77,7 +91,6 @@ namespace HSModLoader.App
                 // This should get the mod info panel to update automatically
                 this.ListAvailableMods.SelectedIndex = 0;
             }
-
 
             var style = new Style();
                         
