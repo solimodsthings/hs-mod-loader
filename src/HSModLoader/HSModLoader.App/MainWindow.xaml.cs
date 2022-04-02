@@ -57,11 +57,7 @@ namespace HSModLoader.App
             this.SteamWorkshopDirectoryWatcher.Created += OnSteamWorkshopDirectoryChanged;
             this.SteamWorkshopDirectoryWatcher.Deleted += OnSteamWorkshopDirectoryChanged;
 
-            if (!string.IsNullOrEmpty(this.Manager.GameFolderPath))
-            {
-                this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
-                this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
-            }
+            this.TryStartSteamWorkshopDirectoryWatcher();
 
             this.ModViewModels = new ObservableCollection<ModViewModel>();
             this.ListAvailableMods.ItemsSource = this.ModViewModels;
@@ -77,7 +73,6 @@ namespace HSModLoader.App
                 // This should get the mod info panel to update automatically
                 this.ListAvailableMods.SelectedIndex = 0;
             }
-
 
             var style = new Style();
                         
@@ -205,8 +200,7 @@ namespace HSModLoader.App
             }
             else if (result == true && !string.IsNullOrEmpty(this.Manager.GameFolderPath))
             {
-                this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
-                this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+                TryStartSteamWorkshopDirectoryWatcher();
 
                 this.RebuildModViewModels();
                 this.RefreshModList();
@@ -705,6 +699,29 @@ namespace HSModLoader.App
             }
 
             return false;
+        }
+
+        private void TryStartSteamWorkshopDirectoryWatcher()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(this.Manager.GameFolderPath))
+                {
+                    this.SteamWorkshopDirectoryWatcher.Path = this.Manager.GetPathToSteamWorkshopMods();
+                    this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = true;
+                }
+            }
+            catch (Exception e)
+            {
+                e.AppendToLogFile();
+            }
+            finally
+            {
+                if (this.SteamWorkshopDirectoryWatcher != null)
+                {
+                    this.SteamWorkshopDirectoryWatcher.EnableRaisingEvents = false;
+                }
+            }
         }
 
     }
