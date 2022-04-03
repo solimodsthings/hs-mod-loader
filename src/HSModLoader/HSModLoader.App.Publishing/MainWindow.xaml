@@ -55,7 +55,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock x:Name="TextBlockAppTitle" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13" Foreground="White" Padding="4,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Himeko Sutori Mod Publisher" />
+            <TextBlock x:Name="TextBlockAppTitle" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13" Foreground="White" Padding="4,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Himeko Sutori Mod Publisher 1.3" />
             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
                 <ui:TitleBarButton x:Name="ForwardButton" Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE710;" ToolTip="New" Click="OnNewModButtonClick"/>
                 <ui:TitleBarButton Style="{StaticResource AppTitleBarButtonStyle}" Content="&#xE8B7;" ToolTip="Open" Click="OnOpenModButtonClick"/>
