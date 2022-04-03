@@ -116,7 +116,7 @@
                     Apply Mods to Game
                 </Button>
                 <Button x:Name="ButtonLaunchgame" Grid.Column="3" Padding="4" Margin="4" Click="OnLaunchGameButtonClick" ToolTip="Launch Himeko Sutori">
-                    Exit and Launch Game
+                    Launch Game and Exit
                 </Button>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
