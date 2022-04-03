@@ -48,8 +48,9 @@
             Standalone distribution will let you generate an .hsmod file. Steam distribution will upload your mod to the Steam workshop.
         </TextBlock>
 
-        <RadioButton Grid.Row="2" x:Name="RadioButtonDistributeAsStandaloneMod" IsChecked="True" GroupName="DistributionType" Margin="4" Padding="4">Distribute as Standalone Mod</RadioButton>
-        <RadioButton Grid.Row="3" x:Name="RadioButtonDistributeAsSteamMod" GroupName="DistributionType" Margin="4" Padding="4">Distribute to Steam Workshop</RadioButton>
+        <RadioButton Grid.Row="2" x:Name="RadioButtonDistributeAsSteamMod" IsChecked="True" GroupName="DistributionType" Margin="4" Padding="4">Distribute to Steam Workshop</RadioButton>
+        <RadioButton Grid.Row="3" x:Name="RadioButtonDistributeAsStandaloneMod" GroupName="DistributionType" Margin="4" Padding="4">Distribute as Standalone Mod</RadioButton>
+        
         
 
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
