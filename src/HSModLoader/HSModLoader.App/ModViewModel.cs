@@ -194,22 +194,28 @@ namespace HSModLoader.App
             {
                 var result = string.Empty;
 
-                if(Configuration.Mod.CompatibleWithBaseGame)
+                if (Configuration.Mod.IsCampaign)
                 {
-                    result = "Official Campaign, ";
+                    result += "Custom Campaign";
                 }
-
-                if (Configuration.Mod.CompatibleWithSrvGame)
+                else if (Configuration.Mod.CompatibleWithBaseGame)
                 {
-                    result += "Septaroad Voyager";
+                    // result = "Official Campaign, ";
+                    result = "Official Campaign Mod";
                 }
-
+                else if (Configuration.Mod.CompatibleWithSrvGame)
+                {
+                    result += "Septaroad Voyager Mod";
+                }
+                
+                /*
                 if(result.EndsWith(", "))
                 {
                     result = result.Substring(0, result.Length - 2);
                 }
+                */
 
-                if(string.IsNullOrEmpty(result))
+                if (string.IsNullOrEmpty(result))
                 {
                     result = "Not Specified";
                 }
