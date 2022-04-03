@@ -670,7 +670,10 @@ namespace HSModLoader.App.Publishing
             // Bit of a hack as the hyperlink click event keeps firing twice
             if((DateTime.Now - LastAccessedCompatibilityInformation).TotalSeconds > 1)
             {
-                this.ShowPopupMessage("Compatibility Information", "Setting compatibility through the Mod Publisher only affects the Steam Workshop item. If your mod has custom code, remember to set intended game types within your mutator.", true);
+                this.ShowPopupMessage("Mod Type", 
+                    "Mod type affects compatibility with the base campaign or SRV campaign. Remember that setting compatibility here only affects the Steam Workshop item. " 
+                  + "If your mod has custom code through its own mutator, remember to also define the game type within that mutator. "
+                  + "New custom campaigns are the exception as they don't require a mutator.", true);
                 LastAccessedCompatibilityInformation = DateTime.Now;
             }
             
