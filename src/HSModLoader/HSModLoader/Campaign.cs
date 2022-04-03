@@ -56,15 +56,24 @@ namespace HSModLoader
         {
             var result = new StringBuilder();
 
+            var scrubbedDescription = 
+
             result.Append("(");
-            result.Append(string.Format("CampaignName=\"{0}\",", Name));
+            result.Append(string.Format("CampaignName=\"{0}\",", this.Scrub(Name)));
             result.Append(string.Format("CampaignPrefix=\"{0}\",", Prefix));
-            result.Append(string.Format("CampaignDescription=\"{0}\",", Description));
+            result.Append(string.Format("CampaignDescription=\"{0}\",", this.Scrub(Description)));
             result.Append(string.Format("CampaignBaseLevel=\"{0}\",", BaseLevel));
             result.Append(string.Format("CampaignGameType=\"{0}\"", GameType));
             result.Append(")");
 
             return result.ToString();
+        }
+
+        private string Scrub(string s)
+        {
+            return s.Replace("\"", "''")
+                    .Replace("\r", "")
+                    .Replace("\n", " ");
         }
 
     }
