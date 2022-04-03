@@ -90,7 +90,7 @@
                             <GridViewColumn DisplayMemberBinding="{Binding Version}" Header="Version" Width="100"/>
                             <GridViewColumn DisplayMemberBinding="{Binding State}" Header="Status" Width="120"/>
                             <GridViewColumn DisplayMemberBinding="{Binding RegistrationType}" Header="Type" Width="120"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding Compatibility}" Header="Compatibility" Width="250"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Compatibility}" Header="Mod Type" Width="250"/>
                         </GridView>
                     </ListView.View>
 
