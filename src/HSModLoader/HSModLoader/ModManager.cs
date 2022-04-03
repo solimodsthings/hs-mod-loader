@@ -691,7 +691,7 @@ namespace HSModLoader
                     var c = new Campaign()
                     {
                         Name = config.Mod.CampaignName,
-                        Description = config.Mod.Description,
+                        Description = config.Mod.CampaignDescription,
                         BaseLevel = config.Mod.CampaignBaseLevel,
                         Prefix = config.Mod.CampaignPrefix,
                         GameType = config.Mod.CampaignGameType
