@@ -4,6 +4,10 @@ using System.Text;
 
 namespace HSModLoader
 {
+    /// <summary>
+    /// Represents a selectable Campaign within the game's
+    /// Campaign menu.
+    /// </summary>
     public class Campaign
     {
         public string Name { get; set; }
@@ -13,6 +17,7 @@ namespace HSModLoader
         public string GameType { get; set; }
 
         public Campaign() { }
+
         public Campaign(string payload)
         {
 
@@ -53,6 +58,10 @@ namespace HSModLoader
             }
         }
         
+        /// <summary>
+        /// Provides a game-friendly string representation of this
+        /// campaign that is ready to be written to the campaign list file.
+        /// </summary>
         public override string ToString()
         {
             var result = new StringBuilder();

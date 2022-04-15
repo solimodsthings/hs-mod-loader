@@ -7,8 +7,8 @@ namespace HSModLoader
     /// <summary>
     /// Captures automatic registration and unregistration
     /// events for mods. These events occur when a mod is placed directly
-    /// in a mod storage location, bypassing the modloader application.
-    /// In some scenarios, automatic registration is expected such as for
+    /// in a mod storage location by a user, without the ModLoader's help.
+    /// Automatic registration events are also expected for
     /// recently subscribed Steam Workshop mods that get automatically
     /// downloaded.
     /// </summary>
