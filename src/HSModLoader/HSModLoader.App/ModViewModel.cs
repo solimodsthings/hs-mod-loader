@@ -10,7 +10,8 @@ using System.Windows.Media.Imaging;
 namespace HSModLoader.App
 {
     /// <summary>
-    /// Used for displaying mod information in the main window's ordered table of mods.
+    /// Represents information that needs to be 
+    /// displayed in the main window's mod list.
     /// </summary>
     public class ModViewModel : INotifyPropertyChanged
     {

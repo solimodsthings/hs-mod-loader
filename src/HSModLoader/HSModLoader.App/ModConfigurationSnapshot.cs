@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace HSModLoader.App
 {
+    /// <summary>
+    /// A snapshot in time of a mod's current state. This is useful
+    /// for detecting configuration changes made through the Mod Loader
+    /// that haven't been saved yet.
+    /// </summary>
     public class ModConfigurationSnapshot
     {
         public ModConfiguration Mod { get; set; }
