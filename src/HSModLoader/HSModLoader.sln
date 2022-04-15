@@ -5,15 +5,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.App", "HSModLoader.App\HSModLoader.App.csproj", "{9F2DD837-F1B9-4387-901E-CAA2AE6497A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HSModLoader.Console", "HSModLoader.Console\HSModLoader.Console.csproj", "{0631007A-3818-4C50-9487-3ECE6DF0AE72}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HSModLoader", "HSModLoader\HSModLoader.csproj", "{E21B1996-6502-429B-BD7B-A3542AC26526}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.App.Publishing", "HSModLoader.App.Publishing\HSModLoader.App.Publishing.csproj", "{FF1D93F9-DAAA-4756-B1BB-ADE1A13A553D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.WpfControls", "HSModLoader.WpfControls\HSModLoader.WpfControls.csproj", "{4C8DD087-E061-40EB-94E9-92D4EA40ABFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSModLoader.Test", "HSModLoader.Test\HSModLoader.Test.csproj", "{51E49774-CC01-44CD-AFA1-093C938A520A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HSModLoader.Test", "HSModLoader.Test\HSModLoader.Test.csproj", "{51E49774-CC01-44CD-AFA1-093C938A520A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +23,6 @@ Global
 		{9F2DD837-F1B9-4387-901E-CAA2AE6497A8}.Debug|Any CPU.Build.0 = Debug|x64
 		{9F2DD837-F1B9-4387-901E-CAA2AE6497A8}.Release|Any CPU.ActiveCfg = Release|x64
 		{9F2DD837-F1B9-4387-901E-CAA2AE6497A8}.Release|Any CPU.Build.0 = Release|x64
-		{0631007A-3818-4C50-9487-3ECE6DF0AE72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0631007A-3818-4C50-9487-3ECE6DF0AE72}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0631007A-3818-4C50-9487-3ECE6DF0AE72}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0631007A-3818-4C50-9487-3ECE6DF0AE72}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E21B1996-6502-429B-BD7B-A3542AC26526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E21B1996-6502-429B-BD7B-A3542AC26526}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E21B1996-6502-429B-BD7B-A3542AC26526}.Release|Any CPU.ActiveCfg = Release|Any CPU
