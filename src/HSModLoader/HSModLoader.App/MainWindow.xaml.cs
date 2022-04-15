@@ -37,6 +37,7 @@ namespace HSModLoader.App
         private FileSystemWatcher SteamWorkshopDirectoryWatcher { get; set; } // Used to check if a new mod has been subscribed to
         public ObservableCollection<ModViewModel> ModViewModels { get; set; }
         public ModViewModel SelectedMod { get; set; }
+        private List<ModConfigurationSnapshot> ModConfigurationSnapshots { get; set; }
 
         public MainWindow()
         {
@@ -73,6 +74,8 @@ namespace HSModLoader.App
                 // This should get the mod info panel to update automatically
                 this.ListAvailableMods.SelectedIndex = 0;
             }
+
+            this.ModConfigurationSnapshots = new List<ModConfigurationSnapshot>();
 
             var style = new Style();
                         
@@ -673,8 +676,6 @@ namespace HSModLoader.App
                 Game.OpenSteamWorkshopItem(steamId.Value);
             }
         }
-
-        private List<ModConfigurationSnapshot> ModConfigurationSnapshots { get; set; } = new List<ModConfigurationSnapshot>();
 
         private void TakeModConfigurationSnapshot()
         {
