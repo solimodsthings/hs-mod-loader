@@ -193,6 +193,9 @@ namespace HSModLoader
             }
         }
 
+        /// <summary>
+        /// Launches the Steam Workshop and goes directly to the page with the specified id.
+        /// </summary>
         public static void OpenSteamWorkshopItem(ulong id)
         {
             try
@@ -205,19 +208,6 @@ namespace HSModLoader
                 e.AppendToLogFile();
             }
             
-        }
-
-        public static void StartGame()
-        {
-            try
-            {
-                var p = new ProcessStartInfo(string.Format("steam://run/669500")) { UseShellExecute = true, Verb = "open" };
-                Process.Start(p);
-            }
-            catch (Exception e)
-            {
-                e.AppendToLogFile();
-            }
         }
 
     }
